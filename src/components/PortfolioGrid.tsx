@@ -99,13 +99,18 @@ const portfolioData: PortfolioItem[] = [
 ];
 
 export default function PortfolioGrid() {
-  const [activeFilter, setActiveFilter] = useState<string>("All");
+  const [activeFilter, setActiveFilter] = useState<string>("Semua");
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
 
-  const categories = ["All", "Editorial", "Portrait", "Commercial"];
+  const categories = [
+    { key: "Semua", label: "Semua" },
+    { key: "Editorial", label: "Editorial" },
+    { key: "Portrait", label: "Potret" },
+    { key: "Commercial", label: "Komersial" },
+  ];
 
   const filteredItems =
-    activeFilter === "All"
+    activeFilter === "Semua"
       ? portfolioData
       : portfolioData.filter((item) => item.category === activeFilter);
 
@@ -117,10 +122,10 @@ export default function PortfolioGrid() {
           <div>
             <div className="flex items-center gap-2 text-xs font-mono tracking-[0.25em] uppercase text-[#720C10] font-bold mb-3">
               <span className="w-2 h-2 rounded-full bg-[#720C10]" />
-              CURATED ARCHIVE 2024
+              ARSIP TERKURASI 2024
             </div>
             <h2 className="text-3xl sm:text-5xl font-serif text-white font-light tracking-tight">
-              Selected <span className="italic font-serif-italic font-normal">Works</span> & Editions
+              Karya <span className="italic font-serif-italic font-normal">Terpilih</span> & Koleksi Studio
             </h2>
           </div>
 
@@ -128,16 +133,16 @@ export default function PortfolioGrid() {
           <div className="flex items-center gap-2 p-1.5 rounded-full bg-white/[0.04] border border-white/10 backdrop-blur-md overflow-x-auto max-w-full">
             {categories.map((category) => (
               <button
-                key={category}
+                key={category.key}
                 type="button"
-                onClick={() => setActiveFilter(category)}
+                onClick={() => setActiveFilter(category.key)}
                 className={`px-4 sm:px-5 py-2 rounded-full text-xs font-medium tracking-wider uppercase transition-all duration-300 whitespace-nowrap ${
-                  activeFilter === category
+                  activeFilter === category.key
                     ? "bg-[#720C10] text-white shadow-lg shadow-[#720C10]/40 font-semibold"
                     : "text-zinc-400 hover:text-white hover:bg-white/5"
                 }`}
               >
-                {category}
+                {category.label}
               </button>
             ))}
           </div>
@@ -169,7 +174,7 @@ export default function PortfolioGrid() {
                 {/* Top Corner Badge */}
                 <div className="absolute top-4 left-4 z-10">
                   <span className="px-2.5 py-1 rounded-full text-[10px] font-mono tracking-wider uppercase bg-black/50 backdrop-blur-md text-white/80 border border-white/10">
-                    {item.category}
+                    {item.category === "Portrait" ? "Potret" : item.category === "Commercial" ? "Komersial" : item.category}
                   </span>
                 </div>
 
@@ -212,7 +217,7 @@ export default function PortfolioGrid() {
               type="button"
               onClick={() => setSelectedItem(null)}
               className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-black/70 border border-white/20 text-white flex items-center justify-center hover:bg-[#720C10] transition-colors"
-              aria-label="Close Lightbox"
+              aria-label="Tutup Tampilan"
             >
               <X className="w-5 h-5" />
             </button>
@@ -232,7 +237,7 @@ export default function PortfolioGrid() {
             <div className="w-full lg:w-1/3 p-6 sm:p-8 flex flex-col justify-between bg-[#141414]">
               <div>
                 <span className="px-3 py-1 rounded-full text-xs font-mono uppercase bg-[#720C10]/30 text-[#ff6169] border border-[#720C10]/50">
-                  {selectedItem.category}
+                  {selectedItem.category === "Portrait" ? "Potret" : selectedItem.category === "Commercial" ? "Komersial" : selectedItem.category}
                 </span>
 
                 <h3 className="mt-4 text-2xl sm:text-3xl font-serif text-white font-medium">
@@ -240,21 +245,21 @@ export default function PortfolioGrid() {
                 </h3>
 
                 <p className="mt-2 text-sm text-zinc-400 font-light">
-                  Commissioned by <span className="text-white font-medium">{selectedItem.client}</span>. Produced within Origine Creative Atelier with bespoke cinematic lighting.
+                  Ditugaskan oleh <span className="text-white font-medium">{selectedItem.client}</span>. Diproduksi di Atelier Kreatif Origine dengan tata pencahayaan sinematik pesanan khusus.
                 </p>
 
                 <div className="mt-8 space-y-4 pt-6 border-t border-white/10 text-xs font-mono">
                   <div>
-                    <span className="text-zinc-500 uppercase tracking-wider block">Optics & Camera</span>
+                    <span className="text-zinc-500 uppercase tracking-wider block">Optik & Kamera</span>
                     <span className="text-zinc-200 font-medium">{selectedItem.gear}</span>
                   </div>
                   <div>
-                    <span className="text-zinc-500 uppercase tracking-wider block">Production Year</span>
+                    <span className="text-zinc-500 uppercase tracking-wider block">Tahun Produksi</span>
                     <span className="text-zinc-200">{selectedItem.year}</span>
                   </div>
                   <div>
-                    <span className="text-zinc-500 uppercase tracking-wider block">Location Atelier</span>
-                    <span className="text-zinc-200">Origine Studio 01 (Cyclorama Suite)</span>
+                    <span className="text-zinc-500 uppercase tracking-wider block">Lokasi Atelier</span>
+                    <span className="text-zinc-200">Studio 01 Origine (Suite Cyclorama)</span>
                   </div>
                 </div>
               </div>
@@ -265,7 +270,7 @@ export default function PortfolioGrid() {
                   onClick={() => setSelectedItem(null)}
                   className="w-full py-3 rounded-full bg-[#720C10] hover:bg-[#8e1015] text-white text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors shadow-lg"
                 >
-                  <span>Book Similar Production</span>
+                  <span>Pesan Produksi Serupa</span>
                   <ArrowUpRight className="w-4 h-4" />
                 </a>
               </div>

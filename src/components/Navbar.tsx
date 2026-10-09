@@ -23,11 +23,10 @@ export default function Navbar({ isLoaded, onReplay }: NavbarProps) {
   }, []);
 
   const navLinks = [
-    { name: "Portfolio", href: "#portfolio" },
-    { name: "Studio Spaces", href: "#spaces" },
-    { name: "Curated Series", href: "#series" },
-    { name: "Rates & Booking", href: "#booking" },
-    { name: "About Atelier", href: "#about" },
+    { name: "Portofolio", href: "#portfolio" },
+    { name: "Ruang Studio", href: "#spaces" },
+    { name: "Tarif & Reservasi", href: "#booking" },
+    { name: "Tentang Atelier", href: "#about" },
   ];
 
   const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
@@ -95,7 +94,7 @@ export default function Navbar({ isLoaded, onReplay }: NavbarProps) {
                 type="button"
                 onClick={() => setSoundEnabled(!soundEnabled)}
                 className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 text-xs tracking-wider uppercase text-zinc-400 hover:text-white hover:border-white/30 transition-all duration-200"
-                title={soundEnabled ? "Mute Studio Ambient" : "Enable Studio Ambient"}
+                title={soundEnabled ? "Bisukan Suasana Studio" : "Aktifkan Suasana Studio"}
                 style={{
                   opacity: isLoaded ? 1 : 0,
                   transition: "opacity 0.6s ease-out 0.4s",
@@ -104,12 +103,12 @@ export default function Navbar({ isLoaded, onReplay }: NavbarProps) {
                 {soundEnabled ? (
                   <>
                     <Volume2 className="w-3.5 h-3.5 text-[#e03a42] animate-pulse" />
-                    <span className="text-[10px]">Audio ON</span>
+                    <span className="text-[10px]">Audio AKTIF</span>
                   </>
                 ) : (
                   <>
                     <VolumeX className="w-3.5 h-3.5 text-zinc-500" />
-                    <span className="text-[10px]">Mute</span>
+                    <span className="text-[10px]">Bisu</span>
                   </>
                 )}
               </button>
@@ -123,7 +122,7 @@ export default function Navbar({ isLoaded, onReplay }: NavbarProps) {
                   transition: "opacity 0.6s ease-out 0.45s",
                 }}
               >
-                Producer Sign In
+                Masuk Produser
               </a>
 
               {/* CTA Book Session Button */}
@@ -137,7 +136,7 @@ export default function Navbar({ isLoaded, onReplay }: NavbarProps) {
                   transition: "opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.5s, transform 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.5s",
                 }}
               >
-                <span>Book Session</span>
+                <span>Pesan Sesi</span>
                 <ArrowUpRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </a>
 
@@ -146,7 +145,7 @@ export default function Navbar({ isLoaded, onReplay }: NavbarProps) {
                 type="button"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="md:hidden p-2 rounded-lg text-zinc-300 hover:text-white border border-white/10"
-                aria-label="Toggle Navigation"
+                aria-label="Buka Navigasi"
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
@@ -164,7 +163,7 @@ export default function Navbar({ isLoaded, onReplay }: NavbarProps) {
         }`}
       >
         <div className="flex flex-col gap-6 text-center">
-          <p className="text-xs uppercase tracking-[0.3em] text-[#720C10] font-bold">Origine Atelier</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-[#720C10] font-bold">Atelier Origine</p>
           {navLinks.map((link) => (
             <a
               key={link.name}
@@ -175,13 +174,19 @@ export default function Navbar({ isLoaded, onReplay }: NavbarProps) {
               {link.name}
             </a>
           ))}
+          <a
+            href="/auth/login"
+            className="text-lg font-serif text-zinc-300 hover:text-white transition-colors"
+          >
+            Portal Masuk Produser
+          </a>
           <div className="pt-6 border-t border-white/10 flex flex-col gap-3">
             <a
               href="#booking"
               onClick={(e) => scrollToSection(e, "#booking")}
               className="w-full py-3.5 rounded-full bg-[#720C10] text-white font-medium uppercase tracking-wider text-sm text-center"
             >
-              Reserve Studio
+              Reservasi Studio
             </a>
             {onReplay && (
               <button
@@ -192,7 +197,7 @@ export default function Navbar({ isLoaded, onReplay }: NavbarProps) {
                 }}
                 className="text-xs text-zinc-400 hover:text-white tracking-widest uppercase py-2"
               >
-                ↺ Replay Preloader Sequence
+                ↺ Putar Ulang Animasi Intro
               </button>
             )}
           </div>

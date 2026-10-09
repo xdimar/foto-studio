@@ -41,14 +41,14 @@ export default function RegisterPage() {
         setErrorMsg(error.message);
       } else {
         setSuccessMsg(
-          "Producer account registered. Please check your email for the confirmation link or sign in directly."
+          "Akun produser berhasil didaftarkan. Silakan periksa email Anda atau masuk langsung ke portal."
         );
         setTimeout(() => {
           router.push("/auth/login");
         }, 2000);
       }
     } catch (err: any) {
-      setErrorMsg(err.message || "An unexpected error occurred during registration.");
+      setErrorMsg(err.message || "Terjadi kesalahan saat pendaftaran akun.");
     } finally {
       setLoading(false);
     }
@@ -67,10 +67,10 @@ export default function RegisterPage() {
           className="inline-flex items-center gap-2 text-xs font-mono tracking-wider uppercase text-zinc-400 hover:text-white transition-colors"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Return to Studio</span>
+          <span>Kembali ke Studio</span>
         </Link>
         <span className="text-[10px] font-mono tracking-widest text-[#e03a42] uppercase">
-          CLIENT ATELIER ENROLLMENT
+          PENDAFTARAN ATELIER KLIEN
         </span>
       </div>
 
@@ -82,9 +82,9 @@ export default function RegisterPage() {
             <div className="inline-block text-3xl mb-3">
               <OrigineLogo />
             </div>
-            <h1 className="text-2xl font-serif text-white font-medium">Create Producer Account</h1>
+            <h1 className="text-2xl font-serif text-white font-medium">Buat Akun Produser</h1>
             <p className="text-xs text-zinc-400 mt-1 font-light">
-              Register to streamline bookings, manage call sheets, and hold studio dates.
+              Daftar untuk mempermudah reservasi, mengelola jadwal pemotretan, dan menahan tanggal studio.
             </p>
           </div>
 
@@ -105,7 +105,7 @@ export default function RegisterPage() {
           <form onSubmit={handleRegister} className="space-y-4">
             <div>
               <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block mb-1.5">
-                Full Name
+                Nama Lengkap
               </label>
               <div className="relative">
                 <User className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -113,7 +113,7 @@ export default function RegisterPage() {
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Vivienne Westwood Production"
+                  placeholder="Contoh: Tim Produksi Vivienne Westwood"
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-black/60 border border-white/15 text-white text-xs focus:border-[#720C10] outline-none transition-colors"
                   required
                 />
@@ -122,7 +122,7 @@ export default function RegisterPage() {
 
             <div>
               <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block mb-1.5">
-                Agency / Production House
+                Agensi / Rumah Produksi
               </label>
               <div className="relative">
                 <Building className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -130,7 +130,7 @@ export default function RegisterPage() {
                   type="text"
                   value={agency}
                   onChange={(e) => setAgency(e.target.value)}
-                  placeholder="e.g. Art Partner / Vogue Creative"
+                  placeholder="Contoh: Art Partner / Vogue Creative"
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-black/60 border border-white/15 text-white text-xs focus:border-[#720C10] outline-none transition-colors"
                 />
               </div>
@@ -138,7 +138,7 @@ export default function RegisterPage() {
 
             <div>
               <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block mb-1.5">
-                Work Email Address
+                Alamat Email Pekerjaan
               </label>
               <div className="relative">
                 <Mail className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -146,7 +146,7 @@ export default function RegisterPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="producer@agency.com"
+                  placeholder="produser@agensi.com"
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-black/60 border border-white/15 text-white text-xs font-mono focus:border-[#720C10] outline-none transition-colors"
                   required
                 />
@@ -155,7 +155,7 @@ export default function RegisterPage() {
 
             <div>
               <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block mb-1.5">
-                Secure Password
+                Kata Sandi Aman
               </label>
               <div className="relative">
                 <Lock className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -176,18 +176,18 @@ export default function RegisterPage() {
               disabled={loading}
               className="w-full py-3 mt-3 rounded-full bg-[#720C10] hover:bg-[#8e1015] text-white text-xs font-semibold uppercase tracking-wider transition-all duration-300 shadow-xl shadow-[#720C10]/30 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Registering..." : "Create Atelier Account"}
+              {loading ? "Mendaftarkan..." : "Buat Akun Atelier"}
             </button>
           </form>
 
           <div className="mt-8 pt-6 border-t border-white/10 text-center">
             <p className="text-xs text-zinc-400 font-light">
-              Already have an atelier account?{" "}
+              Sudah memiliki akun atelier?{" "}
               <Link
                 href="/auth/login"
                 className="text-[#ff6169] hover:text-white font-medium transition-colors"
               >
-                Sign In Instead
+                Masuk Saja
               </Link>
             </p>
           </div>
@@ -196,7 +196,7 @@ export default function RegisterPage() {
 
       {/* Bottom Footer Note */}
       <div className="max-w-md w-full mx-auto text-center text-[10px] font-mono text-zinc-600 relative z-10">
-        ORIGINE ATELIER AUTH PROTOCOL • END-TO-END ENCRYPTED
+        PROTOKOL KEAMANAN ATELIER ORIGINE • TERENKRIPSI PENUH
       </div>
     </div>
   );

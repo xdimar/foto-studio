@@ -2,7 +2,7 @@
 
 import React from "react";
 import OrigineLogo from "./OrigineLogo";
-import { ArrowUp, Instagram, Mail, Phone, MapPin } from "lucide-react";
+import { ArrowUp } from "lucide-react";
 
 interface FooterProps {
   onReplay?: () => void;
@@ -23,7 +23,7 @@ export default function Footer({ onReplay }: FooterProps) {
               <OrigineLogo />
             </div>
             <p className="text-sm font-light text-zinc-400 max-w-sm leading-relaxed">
-              Origine is a luxury photo studio and creative atelier designed for editorial fashion campaigns, fine-art portraiture, and high-impact commercial visual productions.
+              Origine adalah studio foto mewah dan atelier kreatif yang dirancang untuk kampanye mode editorial, potret seni rupa, dan produksi visual komersial berdaya pikat tinggi.
             </p>
             <div className="flex items-center gap-4 text-zinc-300">
               <span className="text-xs font-mono tracking-widest text-[#e03a42] uppercase">
@@ -37,27 +37,27 @@ export default function Footer({ onReplay }: FooterProps) {
           {/* Col 3: Navigation */}
           <div className="space-y-4">
             <p className="text-xs font-mono uppercase tracking-[0.25em] text-white font-semibold">
-              EXPLORE
+              JELAJAHI
             </p>
             <ul className="space-y-2.5 text-xs font-mono">
               <li>
                 <a href="#portfolio" className="hover:text-white transition-colors">
-                  CURATED PORTFOLIO
+                  PORTOFOLIO TERKURASI
                 </a>
               </li>
               <li>
                 <a href="#spaces" className="hover:text-white transition-colors">
-                  STUDIO SUITES & CYC
+                  SUITE STUDIO & CYC
                 </a>
               </li>
               <li>
                 <a href="#booking" className="hover:text-white transition-colors">
-                  RATES & RESERVATIONS
+                  TARIF & RESERVASI
                 </a>
               </li>
               <li>
                 <a href="#about" className="hover:text-white transition-colors">
-                  ABOUT THE ATELIER
+                  TENTANG ATELIER
                 </a>
               </li>
             </ul>
@@ -66,7 +66,7 @@ export default function Footer({ onReplay }: FooterProps) {
           {/* Col 4: Atelier Locations */}
           <div className="space-y-4">
             <p className="text-xs font-mono uppercase tracking-[0.25em] text-white font-semibold">
-              ATELIER ADDRESSES
+              ALAMAT ATELIER
             </p>
             <div className="space-y-3 text-xs font-mono text-zinc-400">
               <div>
@@ -83,12 +83,12 @@ export default function Footer({ onReplay }: FooterProps) {
           {/* Col 5: Production Concierge */}
           <div className="space-y-4">
             <p className="text-xs font-mono uppercase tracking-[0.25em] text-white font-semibold">
-              DIRECT DESK
+              MEJA KONTAK LANGSUNG
             </p>
             <div className="space-y-2 text-xs font-mono text-zinc-400">
               <p className="hover:text-white transition-colors">concierge@originestudio.com</p>
               <p className="hover:text-white transition-colors">+62 (21) 8089-2024</p>
-              <p className="text-zinc-500">24/7 Access for Confirmed Sets</p>
+              <p className="text-zinc-500">Akses 24/7 untuk Sesi Terkonfirmasi</p>
             </div>
 
             {onReplay && (
@@ -98,7 +98,7 @@ export default function Footer({ onReplay }: FooterProps) {
                   onClick={onReplay}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/20 text-[10px] font-mono uppercase tracking-wider text-zinc-300 hover:text-white hover:border-[#720C10] transition-colors"
                 >
-                  ↺ Replay Preloader Sequence
+                  ↺ Putar Ulang Animasi Intro
                 </button>
               </div>
             )}
@@ -107,14 +107,14 @@ export default function Footer({ onReplay }: FooterProps) {
 
         {/* Bottom Credits & Back to Top */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-zinc-500">
-          <p>© {new Date().getFullYear()} Origine Creative Studio. All Rights Reserved.</p>
+          <p>© 2024 Origine Creative Studio. Seluruh Hak Dilindungi.</p>
 
           <button
             type="button"
             onClick={scrollToTop}
             className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors group"
           >
-            <span className="uppercase tracking-wider text-[11px]">Return to Top</span>
+            <span className="uppercase tracking-wider text-[11px]">Kembali ke Atas</span>
             <div className="w-7 h-7 rounded-full border border-white/10 flex items-center justify-center group-hover:border-white/30 transition-colors">
               <ArrowUp className="w-3.5 h-3.5 group-hover:-translate-y-0.5 transition-transform" />
             </div>

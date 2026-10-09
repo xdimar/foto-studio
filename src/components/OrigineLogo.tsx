@@ -94,7 +94,7 @@ export default function OrigineLogo({
             
           </div>
 
-          {/* Subtext "CREATIVE STUDIO" aligned under right side */}
+          {/* Subtext "STUDIO KREATIF" aligned under right side */}
           <div
             ref={onSubtextRef}
             className="flex items-center tracking-[0.24em] font-sans font-bold text-white/90 uppercase"
@@ -105,7 +105,7 @@ export default function OrigineLogo({
               whiteSpace: "nowrap",
             }}
           >
-            CREATIVE STUDIO
+            STUDIO KREATIF
           </div>
         </div>
       )}

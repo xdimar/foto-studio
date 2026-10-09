@@ -18,9 +18,9 @@ export default function Hero({ isLoaded }: HeroProps) {
   };
 
   const moodLabels = [
-    { key: "editorial", label: "Haute Couture Editorial" },
-    { key: "studio", label: "Atelier Cyclorama Space" },
-    { key: "portrait", label: "Fine-Art Chiaroscuro" },
+    { key: "editorial", label: "Editorial Mode Tinggi" },
+    { key: "studio", label: "Ruang Cyclorama Atelier" },
+    { key: "portrait", label: "Chiaroscuro Seni Rupa" },
   ] as const;
 
   return (
@@ -47,11 +47,11 @@ export default function Hero({ isLoaded }: HeroProps) {
           <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/[0.03] backdrop-blur-md">
             <span className="w-1.5 h-1.5 rounded-full bg-[#720C10] animate-pulse" />
             <span className="text-[11px] sm:text-xs font-mono tracking-[0.2em] uppercase text-zinc-300">
-              Creative Photography Atelier • Jakarta & Bali
+              Studio Fotografi Kreatif • Jakarta & Bali
             </span>
           </div>
           <span className="hidden sm:inline-block text-xs font-mono text-zinc-600 tracking-widest">
-            // ARCHIVE VOL. 24
+            // ARSIP VOL. 24
           </span>
         </div>
 
@@ -67,9 +67,9 @@ export default function Hero({ isLoaded }: HeroProps) {
                 transitionDelay: "0.35s",
               }}
             >
-              Sculpting <span className="italic font-serif-italic text-zinc-300 font-normal">Light</span>,
+              Memahat <span className="italic font-serif-italic text-zinc-300 font-normal">Cahaya</span>,
               <br />
-              Preserving <span className="font-syne font-bold uppercase tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-zinc-200 to-[#720C10]">Essence</span>.
+              Mengabadikan <span className="font-syne font-bold uppercase tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-zinc-200 to-[#720C10]">Esensi</span>.
             </h1>
 
             <p
@@ -80,9 +80,9 @@ export default function Hero({ isLoaded }: HeroProps) {
                 transitionDelay: "0.5s",
               }}
             >
-              Origine is a bespoke creative atelier specializing in high-fashion editorial campaigns,
-              fine-art portraiture, and commercial cinematography. Equipped with an infinity cyclorama
-              and world-class Broncolor illumination.
+              Origine adalah atelier kreatif eksklusif untuk kampanye editorial mode tinggi,
+              potret seni rupa (fine-art), dan sinematografi komersial. Dilengkapi cyclorama tanpa batas
+              dan tata cahaya Broncolor kelas dunia.
             </p>
 
             {/* CTAs & Micro Actions */}
@@ -98,7 +98,7 @@ export default function Hero({ isLoaded }: HeroProps) {
                 href="#booking"
                 className="group relative inline-flex items-center gap-3 px-7 py-3.5 rounded-full bg-[#720C10] hover:bg-[#8e1015] text-white text-sm font-semibold tracking-wider uppercase transition-all duration-300 shadow-xl shadow-[#720C10]/30 hover:scale-[1.03] active:scale-[0.98]"
               >
-                <span>Reserve Studio Session</span>
+                <span>Reservasi Sesi Studio</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-white transition-transform group-hover:scale-150" />
               </a>
 
@@ -107,7 +107,7 @@ export default function Hero({ isLoaded }: HeroProps) {
                 className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-full border border-white/15 hover:border-white/40 bg-white/[0.02] hover:bg-white/[0.06] text-white text-sm font-medium tracking-wider uppercase transition-all duration-300"
               >
                 <Compass className="w-4 h-4 text-zinc-400" />
-                <span>Explore Works</span>
+                <span>Jelajahi Karya</span>
               </a>
             </div>
 
@@ -123,19 +123,19 @@ export default function Hero({ isLoaded }: HeroProps) {
               <div>
                 <p className="font-syne text-xl sm:text-2xl font-bold text-white">12m</p>
                 <p className="text-xs uppercase tracking-wider text-zinc-500 font-medium mt-0.5">
-                  Curved Cyclorama
+                  Cyclorama Lengkung
                 </p>
               </div>
               <div>
                 <p className="font-syne text-xl sm:text-2xl font-bold text-white">150 MP</p>
                 <p className="text-xs uppercase tracking-wider text-zinc-500 font-medium mt-0.5">
-                  Phase One Medium Format
+                  Format Menengah Phase One
                 </p>
               </div>
               <div className="col-span-2 sm:col-span-1">
                 <p className="font-syne text-xl sm:text-2xl font-bold text-[#e03a42]">Broncolor</p>
                 <p className="text-xs uppercase tracking-wider text-zinc-500 font-medium mt-0.5">
-                  Scoro Illumination System
+                  Sistem Pencahayaan Scoro
                 </p>
               </div>
             </div>
@@ -158,7 +158,7 @@ export default function Hero({ isLoaded }: HeroProps) {
               <div className="relative rounded-xl overflow-hidden border border-white/10 bg-zinc-900 shadow-2xl shadow-black/80 aspect-[4/5]">
                 <Image
                   src={moodImages[activeMood]}
-                  alt="Origine Studio Editorial"
+                  alt="Editorial Studio Origine"
                   fill
                   priority
                   className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
@@ -172,7 +172,7 @@ export default function Hero({ isLoaded }: HeroProps) {
                 <div className="absolute top-4 left-4 right-4 flex items-center justify-between text-[11px] font-mono text-white/70 backdrop-blur-md bg-black/40 px-3 py-1.5 rounded-md border border-white/10">
                   <span className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-[#720C10]" />
-                    ORIGINE ARCHIVE
+                    ARSIP ORIGINE
                   </span>
                   <span>100 ISO • 90mm T2.0</span>
                 </div>
@@ -191,7 +191,7 @@ export default function Hero({ isLoaded }: HeroProps) {
                             : "text-zinc-400 hover:text-white hover:bg-white/10"
                         }`}
                       >
-                        {m.key}
+                        {m.label.split(" ")[0]}
                       </button>
                     ))}
                   </div>
@@ -204,7 +204,7 @@ export default function Hero({ isLoaded }: HeroProps) {
                   <Sparkles className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-wider text-zinc-400 font-semibold">Featured In</p>
+                  <p className="text-xs uppercase tracking-wider text-zinc-400 font-semibold">Tampil Di</p>
                   <p className="text-sm font-serif font-medium text-white">Vogue • Elle • Harper&apos;s</p>
                 </div>
               </div>
@@ -221,12 +221,12 @@ export default function Hero({ isLoaded }: HeroProps) {
           transitionDelay: "0.9s",
         }}
       >
-        <span className="tracking-widest uppercase">Scroll to Discover</span>
+        <span className="tracking-widest uppercase">Gulir untuk Menjelajah</span>
         <a
           href="#portfolio"
           className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors"
         >
-          <span className="text-[11px] tracking-wider uppercase">Explore Atelier Archive</span>
+          <span className="text-[11px] tracking-wider uppercase">Jelajahi Arsip Atelier</span>
           <ArrowDown className="w-3.5 h-3.5 animate-bounce" />
         </a>
       </div>

@@ -65,10 +65,10 @@ export default function Home() {
             type="button"
             onClick={triggerReplay}
             className="group flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-[#161616]/90 hover:bg-[#720C10] text-zinc-300 hover:text-white border border-white/15 hover:border-[#720C10] shadow-2xl backdrop-blur-md text-xs font-mono tracking-wider uppercase transition-all duration-300 hover:scale-105 active:scale-95"
-            title="Replay cinematic opening sequence"
+            title="Putar ulang animasi pembuka sinematik"
           >
             <RotateCcw className="w-3.5 h-3.5 transition-transform duration-500 group-hover:-rotate-180" />
-            <span className="hidden sm:inline">Replay Intro</span>
+            <span className="hidden sm:inline">Putar Ulang Intro</span>
           </button>
         </aside>
       )}

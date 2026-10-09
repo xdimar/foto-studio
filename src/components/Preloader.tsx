@@ -185,10 +185,10 @@ export default function Preloader({ onComplete, isReplaying = false }: Preloader
 
       const progressObj = { value: 0 };
       const statusSteps = [
-        { max: 28, text: "Calibrating Optical Sensors..." },
-        { max: 62, text: "Balancing Studio Illumination..." },
-        { max: 88, text: "Curating Portfolio Archive..." },
-        { max: 100, text: "Atelier Ready." },
+        { max: 28, text: "Mengalibrasi Sensor Optik..." },
+        { max: 62, text: "Menyeimbangkan Pencahayaan Studio..." },
+        { max: 88, text: "Mengurasi Arsip Portofolio..." },
+        { max: 100, text: "Studio Siap Digunakan." },
       ];
 
       tl.to(progressObj, {
@@ -303,7 +303,7 @@ export default function Preloader({ onComplete, isReplaying = false }: Preloader
       <div className="absolute top-8 left-8 sm:top-10 sm:left-12 flex items-center gap-3">
         <span className="w-2 h-2 rounded-full bg-white/60 animate-ping" />
         <span className="text-[10px] sm:text-xs font-mono tracking-[0.3em] uppercase text-white/50">
-          ORIGINE ATELIER • EST. 2024
+          ATELIER ORIGINE • EST. 2024
         </span>
       </div>
 
@@ -312,7 +312,7 @@ export default function Preloader({ onComplete, isReplaying = false }: Preloader
         [50mm f/1.2 • 1/250s • ISO 100]
       </div>
       <div className="absolute bottom-6 left-6 sm:bottom-10 sm:left-12 font-mono text-[10px] text-white/40 tracking-widest hidden sm:block">
-        GRID: 3x3 • STUDIO ILLUMINATION ACTIVE
+        KISI: 3x3 • PENCAHAYAAN STUDIO AKTIF
       </div>
 
       {/* CENTER LOGO WRAPPER (Target of FLIP glide & shrink) */}
@@ -354,7 +354,7 @@ export default function Preloader({ onComplete, isReplaying = false }: Preloader
             ref={statusMessageRef}
             className="tracking-wider uppercase text-[10px] sm:text-[11px] text-white/70 truncate max-w-[190px]"
           >
-            Calibrating Optical Sensors...
+            Mengalibrasi Sensor Optik...
           </p>
           <span
             ref={progressTextRef}

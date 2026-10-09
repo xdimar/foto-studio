@@ -22,8 +22,8 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Origine Studio — Creative Photo Studio & Visual Atelier",
-  description: "High-fashion editorial, fine-art portraiture, and commercial visual production by Origine Creative Studio.",
+  title: "Origine Studio — Studio Foto Kreatif & Atelier Visual",
+  description: "Fotografi editorial haute couture, potret seni rupa, dan produksi visual komersial oleh Origine Creative Studio.",
 };
 
 export default function RootLayout({
@@ -33,7 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="id"
       className={`${jakarta.variable} ${syne.variable} ${playfair.variable} scroll-smooth antialiased`}
     >
       <body className="min-h-screen bg-[#0d0d0d] text-[#F9F8F6] selection:bg-[#720C10] selection:text-white font-sans overflow-x-hidden">

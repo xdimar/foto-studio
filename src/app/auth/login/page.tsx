@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import OrigineLogo from "@/components/OrigineLogo";
 import { createClient } from "@/lib/supabase-client";
-import { ArrowLeft, Lock, Mail, Sparkles, AlertCircle, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Lock, Mail, AlertCircle, CheckCircle2 } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,14 +32,14 @@ export default function LoginPage() {
       if (error) {
         setErrorMsg(error.message);
       } else if (data.session) {
-        setSuccessMsg("Authentication successful. Redirecting to Atelier...");
+        setSuccessMsg("Autentikasi berhasil. Mengalihkan ke Atelier...");
         setTimeout(() => {
           router.push("/");
           router.refresh();
         }, 1000);
       }
     } catch (err: any) {
-      setErrorMsg(err.message || "An unexpected error occurred.");
+      setErrorMsg(err.message || "Terjadi kendala yang tidak terduga.");
     } finally {
       setLoading(false);
     }
@@ -58,10 +58,10 @@ export default function LoginPage() {
           className="inline-flex items-center gap-2 text-xs font-mono tracking-wider uppercase text-zinc-400 hover:text-white transition-colors"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Return to Studio</span>
+          <span>Kembali ke Studio</span>
         </Link>
         <span className="text-[10px] font-mono tracking-widest text-[#e03a42] uppercase">
-          SECURE ATELIER PORTAL
+          PORTAL ATELIER AMAN
         </span>
       </div>
 
@@ -73,9 +73,9 @@ export default function LoginPage() {
             <div className="inline-block text-3xl mb-3">
               <OrigineLogo />
             </div>
-            <h1 className="text-2xl font-serif text-white font-medium">Producer Sign In</h1>
+            <h1 className="text-2xl font-serif text-white font-medium">Masuk Produser</h1>
             <p className="text-xs text-zinc-400 mt-1 font-light">
-              Access your studio reservations, shoot call sheets, and raw file proofs.
+              Akses reservasi studio, jadwal pemotretan, dan file hasil foto Anda.
             </p>
           </div>
 
@@ -96,7 +96,7 @@ export default function LoginPage() {
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block mb-1.5">
-                Email Address
+                Alamat Email
               </label>
               <div className="relative">
                 <Mail className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -104,7 +104,7 @@ export default function LoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="producer@agency.com"
+                  placeholder="produser@agensi.com"
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-black/60 border border-white/15 text-white text-xs font-mono focus:border-[#720C10] outline-none transition-colors"
                   required
                 />
@@ -114,7 +114,7 @@ export default function LoginPage() {
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block">
-                  Password
+                  Kata Sandi
                 </label>
               </div>
               <div className="relative">
@@ -135,18 +135,18 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full py-3 mt-3 rounded-full bg-[#720C10] hover:bg-[#8e1015] text-white text-xs font-semibold uppercase tracking-wider transition-all duration-300 shadow-xl shadow-[#720C10]/30 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Authenticating..." : "Sign In to Portal"}
+              {loading ? "Mengautentikasi..." : "Masuk ke Portal"}
             </button>
           </form>
 
           <div className="mt-8 pt-6 border-t border-white/10 text-center">
             <p className="text-xs text-zinc-400 font-light">
-              Do not have an atelier account yet?{" "}
+              Belum memiliki akun atelier?{" "}
               <Link
                 href="/auth/register"
                 className="text-[#ff6169] hover:text-white font-medium transition-colors"
               >
-                Register Producer Account
+                Daftar Akun Produser
               </Link>
             </p>
           </div>
@@ -155,7 +155,7 @@ export default function LoginPage() {
 
       {/* Bottom Footer Note */}
       <div className="max-w-md w-full mx-auto text-center text-[10px] font-mono text-zinc-600 relative z-10">
-        ORIGINE ATELIER AUTH PROTOCOL • END-TO-END ENCRYPTED
+        PROTOKOL KEAMANAN ATELIER ORIGINE • TERENKRIPSI PENUH
       </div>
     </div>
   );
