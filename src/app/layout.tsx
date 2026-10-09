@@ -1,13 +1,29 @@
-﻿import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import type { Metadata } from "next";
+import { Syne, Plus_Jakarta_Sans, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const syne = Syne({
+  variable: "--font-syne",
+  subsets: ["latin"],
+  weight: ["500", "700", "800"],
+});
+
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-sans",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+});
+
+const playfair = Playfair_Display({
+  variable: "--font-serif-italic",
+  subsets: ["latin"],
+  style: ["italic", "normal"],
+  weight: ["400", "600", "700"],
+});
 
 export const metadata: Metadata = {
-  title: "FotoStudio - Profesional Photography Studio",
-  description: "Studio fotografi profesional dengan layanan terbaik untuk setiap momen berharga Anda",
-  keywords: "studio foto, fotografi profesional, foto pernikahan, foto keluarga, foto produk",
+  title: "Origine Studio — Creative Photo Studio & Visual Atelier",
+  description: "High-fashion editorial, fine-art portraiture, and commercial visual production by Origine Creative Studio.",
 };
 
 export default function RootLayout({
@@ -16,8 +32,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" suppressHydrationWarning>
-      <body className={`${inter.variable} antialiased`}>
+    <html
+      lang="en"
+      className={`${jakarta.variable} ${syne.variable} ${playfair.variable} scroll-smooth antialiased`}
+    >
+      <body className="min-h-screen bg-[#0d0d0d] text-[#F9F8F6] selection:bg-[#720C10] selection:text-white font-sans overflow-x-hidden">
         {children}
       </body>
     </html>
