@@ -65,12 +65,12 @@
 
 /* 1. Hero: Cinematic Split (Kata-kata di KIRI, Gambar di KANAN) */
 .hero-left-enter { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
-.hero-left-exit-up { opacity: 0; transform: translate3d(0, -60px, 0) scale(0.96); filter: blur(8px); }
-.hero-left-exit-down { opacity: 0; transform: translate3d(-70px, 0, 0); filter: blur(8px); }
+.hero-left-exit-up { opacity: 0; transform: translate3d(0, -40px, 0) scale(0.97); filter: blur(4px); }
+.hero-left-exit-down { opacity: 0; transform: translate3d(-50px, 0, 0); filter: blur(6px); }
 
 .hero-right-enter { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
-.hero-right-exit-up { opacity: 0; transform: translate3d(0, -60px, 0) scale(0.93); filter: blur(10px); }
-.hero-right-exit-down { opacity: 0; transform: translate3d(80px, 0, 0) scale(1.05); filter: blur(8px); }
+.hero-right-exit-up { opacity: 0; transform: translate3d(0, -40px, 0) scale(0.96); filter: blur(4px); }
+.hero-right-exit-down { opacity: 0; transform: translate3d(50px, 0, 0) scale(1.03); filter: blur(6px); }
 
 /* 2. Portfolio: Editorial 3D Horizon (Gambar di KIRI, Tulisan di KANAN) */
 .port-left-enter { opacity: 1; transform: translate3d(0, 0, 0) perspective(1200px) rotateY(0deg) scale(1); filter: blur(0); }

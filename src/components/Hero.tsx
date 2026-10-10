@@ -65,18 +65,16 @@ export default function Hero({ isLoaded }: HeroProps) {
               {/* Left Column: Typography & Narrative (Kata-kata di KIRI) */}
               <div className={`lg:col-span-7 flex flex-col ${leftClass}`}>
                 <h1 className="text-4xl sm:text-6xl md:text-7xl xl:text-[5.2rem] font-serif font-light text-white leading-[1.05] tracking-[-0.02em]">
-                  Momen Abadi, <br />
-                  <span className="italic font-serif-italic font-normal text-white/95">
-                    Kemewahan Sinematik
-                  </span>
+                  Timeless <span className="italic font-serif-italic font-normal text-white/95">Memories</span>, <br />
+                  from The Origine.
                   <br />
-                  <span className="text-2xl sm:text-4xl md:text-5xl font-sans font-light tracking-wide text-zinc-400 block mt-2">
-                    di Alam Sejuk Poncokusumo.
+                  <span className="text-xl sm:text-3xl md:text-4xl font-sans font-light tracking-wide text-zinc-400 block mt-3">
+                    Studio Fotografi Eksklusif Poncokusumo, Malang.
                   </span>
                 </h1>
 
                 <p className="mt-6 sm:mt-8 text-base sm:text-lg text-zinc-300 font-light max-w-xl leading-relaxed">
-                  Berlokasi di kawasan sejuk Jl. Raya Belung, Poncokusumo, Malang. Origine Studio adalah studio fotografi eksklusif yang memadukan keasrian alam perbukitan dengan presisi tata cahaya dan cyclorama modern untuk mengabadikan momen abadi Anda.
+                  Menghadirkan karya visual sinematik berstandar tinggi di kawasan sejuk Jl. Raya Belung, Poncokusumo. Origine Studio memadukan keasrian alam pegunungan dengan presisi tata cahaya dan cyclorama modern untuk mengabadikan kenangan Anda yang abadi dan tak lekang oleh waktu.
                 </p>
 
                 {/* CTAs & Micro Actions */}

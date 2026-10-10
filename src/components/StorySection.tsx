@@ -52,28 +52,28 @@ export default function StorySection({
 
       if (variant === "hero") {
         // Hero is at the very top of the page.
-        // It exits upwards when user scrolls down past it (top scrolled up or bottom in upper screen).
-        if (rect.top < -120 || rect.bottom < vh * 0.65) {
+        // It must remain visible and stable while user reads the top, and only transition
+        // out when the user has scrolled significantly down and the next section is already visible.
+        if (rect.bottom < Math.min(vh * 0.3, 260) || rect.top < -Math.max(vh * 0.6, 500)) {
           nextState = "exit-up";
         } else {
           nextState = "enter";
         }
       } else if (variant === "footer") {
         // Footer is at the very bottom.
-        if (rect.top > vh * 0.9) {
+        if (rect.top > vh * 0.95) {
           nextState = "exit-down";
         } else {
           nextState = "enter";
         }
       } else {
         // Standard interactive sections (portfolio, spaces, rates, about, contact)
-        // 1. Below viewport: not entered yet from bottom, or exiting downwards
-        if (rect.top > vh * 0.82) {
+        // 1. Below viewport: enter smoothly as soon as it approaches viewport (92% of screen)
+        if (rect.top > vh * 0.92) {
           nextState = "exit-down";
         }
         // 2. Exiting upwards: user has scrolled down past this section
-        // (bottom is in upper viewport zone)
-        else if (rect.bottom < Math.min(vh * 0.35, 300)) {
+        else if (rect.bottom < Math.min(vh * 0.25, 200)) {
           nextState = "exit-up";
         }
         // 3. Fully in active view
