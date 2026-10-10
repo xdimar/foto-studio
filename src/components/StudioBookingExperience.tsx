@@ -28,6 +28,7 @@ import {
   Layers,
   MapPin,
   RotateCcw,
+  Banknote,
 } from "lucide-react";
 import {
   StudioBooking,
@@ -1193,7 +1194,7 @@ export default function StudioBookingExperience() {
   const [clientPhone, setClientPhone] = useState<string>("");
   const [clientEmail, setClientEmail] = useState<string>("");
   const [clientNotes, setClientNotes] = useState<string>("");
-  const [paymentOption, setPaymentOption] = useState<"full" | "dp" | "on_spot">("dp");
+  const [paymentOption, setPaymentOption] = useState<"on_spot">("on_spot");
 
   // Form submission state
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -1449,8 +1450,8 @@ export default function StudioBookingExperience() {
     setIsSubmitting(true);
 
     try {
-      const depositPaid = paymentOption === "full" ? currentTotalPrice : paymentOption === "dp" ? depositAmount : 0;
-      const paymentStatus = paymentOption === "full" ? "paid" : paymentOption === "dp" ? "dp_paid" : "unpaid";
+      const depositPaid = 0;
+      const paymentStatus = "unpaid";
 
       const selectedAddonsData = selectedAddonIds
         .map((id) => addons.find((a) => a.id === id))
@@ -1470,7 +1471,7 @@ export default function StudioBookingExperience() {
         totalPrice: currentTotalPrice,
         depositPaid,
         paymentStatus,
-        notes: `Durasi: ${activeDurationOption.label} | Peserta: ${activePersonOption.label}${selectedAddonsData.length > 0 ? ` | Addon: ${selectedAddonsData.map(a => a.name).join(', ')}` : ''}${clientNotes ? ` | Catatan: ${clientNotes.trim()}` : ""}`,
+        notes: `Metode Pembayaran: Cash di Tempat (Studio Kasir) | Durasi: ${activeDurationOption.label} | Peserta: ${activePersonOption.label}${selectedAddonsData.length > 0 ? ` | Addon: ${selectedAddonsData.map(a => a.name).join(', ')}` : ''}${clientNotes ? ` | Catatan: ${clientNotes.trim()}` : ""}`,
       };
 
       const res = await fetch("/api/bookings", {
@@ -1522,7 +1523,8 @@ export default function StudioBookingExperience() {
         `• Jam: ${createdBooking.timeSlot}\n` +
         addonLines +
         `• Total Biaya: ${formatRupiah(createdBooking.totalPrice)}\n` +
-        `• Status Bayar: ${createdBooking.paymentStatus === "paid" ? "Lunas" : createdBooking.paymentStatus === "dp_paid" ? `DP ${formatRupiah(createdBooking.depositPaid)}` : "Bayar di Studio"}\n\n` +
+        `• Metode Pembayaran: Cash di Tempat (Bayar di Studio)\n` +
+        `• Status Bayar: Bayar Tunai di Kasir Studio saat Sesi Tiba\n\n` +
         `Mohon konfirmasi ketersediaan dan detail kedatangan. Terima kasih!`
     );
     return `https://wa.me/${phone}?text=${text}`;
@@ -2178,48 +2180,61 @@ export default function StudioBookingExperience() {
               <label className="block text-xs font-mono uppercase text-zinc-400 mb-2 font-semibold">
                 Opsi Pembayaran
               </label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setPaymentOption("dp")}
-                  className={`p-3 rounded-xl border text-left text-xs font-mono transition-all cursor-pointer ${
-                    paymentOption === "dp"
-                      ? "bg-[#720C10]/20 border-[#ff6169] text-white"
-                      : "bg-white/[0.02] border-white/10 text-zinc-400 hover:text-white"
-                  }`}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                {/* 1. OPSI AKTIF: CASH DI TEMPAT */}
+                <div
+                  className="p-4 rounded-2xl border bg-[#720C10]/15 border-[#ff6169] ring-1 ring-[#ff6169]/40 text-white relative flex flex-col justify-between shadow-lg shadow-[#720C10]/20"
                 >
-                  <span className="font-bold block text-white">Deposit / DP</span>
-                  <span className="text-[11px] text-[#ff6169] block mt-0.5">{formatRupiah(depositAmount)}</span>
-                  <span className="text-[10px] text-zinc-500 block">Sisa bayar di kasir studio</span>
-                </button>
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="p-1.5 rounded-lg bg-[#720C10] text-white">
+                          <Banknote className="w-4 h-4" />
+                        </span>
+                        <span className="font-bold text-sm text-white">Cash di Tempat</span>
+                      </div>
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        Aktif Saat Ini
+                      </span>
+                    </div>
+                    <p className="text-xs text-zinc-300 leading-relaxed font-light">
+                      Pembayaran tunai langsung di kasir Origine Studio saat Anda tiba untuk sesi pemotretan. Tanpa perlu transfer biaya di muka.
+                    </p>
+                  </div>
+                  <div className="mt-3.5 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-mono">
+                    <span className="text-zinc-400">Total Tagihan Kasir:</span>
+                    <span className="text-[#ff6169] font-bold font-syne text-sm">
+                      {formatRupiah(currentTotalPrice)}
+                    </span>
+                  </div>
+                </div>
 
-                <button
-                  type="button"
-                  onClick={() => setPaymentOption("full")}
-                  className={`p-3 rounded-xl border text-left text-xs font-mono transition-all cursor-pointer ${
-                    paymentOption === "full"
-                      ? "bg-[#720C10]/20 border-[#ff6169] text-white"
-                      : "bg-white/[0.02] border-white/10 text-zinc-400 hover:text-white"
-                  }`}
+                {/* 2. OPSI QRIS & E-WALLET: COMING SOON */}
+                <div
+                  className="p-4 rounded-2xl border border-white/10 bg-zinc-900/40 text-zinc-500 relative flex flex-col justify-between opacity-70 cursor-not-allowed select-none"
+                  title="Pembayaran QRIS instan sedang dalam tahap integrasi sistem"
                 >
-                  <span className="font-bold block text-white">Pelunasan Penuh</span>
-                  <span className="text-[11px] text-emerald-400 block mt-0.5">{formatRupiah(currentTotalPrice)}</span>
-                  <span className="text-[10px] text-zinc-500 block">Bebas antrean pembayaran</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setPaymentOption("on_spot")}
-                  className={`p-3 rounded-xl border text-left text-xs font-mono transition-all cursor-pointer ${
-                    paymentOption === "on_spot"
-                      ? "bg-[#720C10]/20 border-[#ff6169] text-white"
-                      : "bg-white/[0.02] border-white/10 text-zinc-400 hover:text-white"
-                  }`}
-                >
-                  <span className="font-bold block text-white">Bayar di Studio</span>
-                  <span className="text-[11px] text-amber-300 block mt-0.5">On-The-Spot</span>
-                  <span className="text-[10px] text-zinc-500 block">Cash / QRIS saat tiba</span>
-                </button>
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2 text-zinc-400">
+                        <span className="p-1.5 rounded-lg bg-white/5 text-zinc-400">
+                          <QrCode className="w-4 h-4" />
+                        </span>
+                        <span className="font-semibold text-sm text-zinc-300">QRIS Instan & E-Wallet</span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30 tracking-wider">
+                        Coming Soon
+                      </span>
+                    </div>
+                    <p className="text-xs text-zinc-500 leading-relaxed font-light">
+                      Pembayaran online instan via BCA QRIS, GoPay, OVO, ShopeePay & DANA segera hadir untuk kemudahan transaksi Anda.
+                    </p>
+                  </div>
+                  <div className="mt-3.5 pt-3 border-t border-white/5 flex items-center justify-between text-xs font-mono text-zinc-600">
+                    <span>Metode Digital:</span>
+                    <span className="text-amber-400/70 font-mono text-[11px]">Segera Hadir</span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -2263,6 +2278,11 @@ export default function StudioBookingExperience() {
                 <span className="text-[#ff6169] font-bold">
                   {selectedTimeSlot || "Belum dipilih"}
                 </span>
+              </div>
+
+              <div className="flex justify-between items-center text-zinc-400">
+                <span>Metode Pembayaran:</span>
+                <span className="text-emerald-400 font-medium">Cash di Tempat (Studio)</span>
               </div>
 
               <div className="pt-3 border-t border-white/10 space-y-2">
@@ -2399,6 +2419,17 @@ export default function StudioBookingExperience() {
               <div>
                 <p className="text-zinc-500 text-[10px] uppercase">Total Biaya</p>
                 <p className="text-emerald-400 font-bold text-sm mt-0.5">{formatRupiah(createdBooking.totalPrice)}</p>
+              </div>
+            </div>
+
+            {/* Payment instruction box */}
+            <div className="mt-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs font-mono text-amber-300 flex items-start gap-2.5">
+              <Banknote className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold text-white mb-0.5">Metode Pembayaran: Cash di Tempat</p>
+                <p className="text-zinc-300 text-[11px] leading-relaxed">
+                  Silakan tunjukkan kode booking ini saat tiba di studio. Pembayaran dilakukan secara tunai (Cash) di kasir sebesar <strong className="text-emerald-400 font-bold">{formatRupiah(createdBooking.totalPrice)}</strong> saat jadwal sesi Anda tiba.
+                </p>
               </div>
             </div>
 
