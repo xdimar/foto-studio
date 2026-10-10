@@ -21,13 +21,17 @@ export async function GET(request: Request) {
 
   let bookings = db.bookings;
 
-  // If regular client, only show their own bookings
+  // If regular client, strictly show only their own bookings
   if (session.role === 'user') {
-    bookings = bookings.filter(
-      (b) =>
-        (session.email && b.clientEmail.toLowerCase() === session.email.toLowerCase()) ||
-        b.clientName.toLowerCase() === session.name.toLowerCase()
-    );
+    const userEmail = (session.email || '').toLowerCase().trim();
+    const userName = (session.name || '').toLowerCase().trim();
+    bookings = bookings.filter((b) => {
+      const bEmail = (b.clientEmail || '').toLowerCase().trim();
+      const bName = (b.clientName || '').toLowerCase().trim();
+      const matchEmail = Boolean(userEmail && bEmail === userEmail);
+      const matchName = Boolean(userName && (bName === userName || bName.includes(userName)));
+      return matchEmail || matchName;
+    });
   }
 
   if (statusFilter && statusFilter !== 'all') {

@@ -67,6 +67,10 @@ export async function POST(request: Request) {
     const redirectUrl =
       matchedUser.role === 'user'
         ? '/admin/my-bookings'
+        : matchedUser.role === 'kasir'
+        ? '/admin/bookings'
+        : matchedUser.role === 'magang'
+        ? '/admin/calendar'
         : '/admin';
 
     return NextResponse.json({

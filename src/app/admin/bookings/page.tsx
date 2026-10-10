@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Calendar,
   Search,
@@ -25,11 +26,22 @@ import {
 import { StudioBooking, StudioRoomPricing, StudioAddon, StaffSession } from "@/lib/types";
 
 export default function BookingsManagementPage() {
+  const router = useRouter();
   const [bookings, setBookings] = useState<StudioBooking[]>([]);
   const [rooms, setRooms] = useState<StudioRoomPricing[]>([]);
   const [addons, setAddons] = useState<StudioAddon[]>([]);
   const [session, setSession] = useState<StaffSession | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // RBAC Guard: Only Owner, Admin, and Kasir can access Bookings & POS
+  useEffect(() => {
+    if (loading || !session) return;
+    if (session.role === "user") {
+      router.replace("/admin/my-bookings");
+    } else if (session.role === "magang") {
+      router.replace("/admin/calendar");
+    }
+  }, [loading, session, router]);
 
   // Filters
   const [statusFilter, setStatusFilter] = useState("all");
@@ -200,6 +212,58 @@ export default function BookingsManagementPage() {
     }
   };
 
+  // Quick Status Action (POS Kasir: Terima / Tolak)
+  const handleQuickStatus = async (b: StudioBooking, newStatus: "confirmed" | "cancelled") => {
+    try {
+      const res = await fetch("/api/bookings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: b.id,
+          bookingStatus: newStatus,
+          paymentStatus: b.paymentStatus,
+          depositPaid: b.depositPaid,
+          notes: b.notes,
+          googleDriveUrl: b.googleDriveUrl,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchData();
+      } else {
+        alert(data.error || "Gagal mengubah status sesi.");
+      }
+    } catch (e) {
+      alert("Terjadi kendala saat update status.");
+    }
+  };
+
+  // Quick Payment Action (POS Kasir: Konfirmasi Lunas Tunai)
+  const handleQuickPayment = async (b: StudioBooking) => {
+    try {
+      const res = await fetch("/api/bookings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: b.id,
+          bookingStatus: b.bookingStatus === "pending" ? "confirmed" : b.bookingStatus,
+          paymentStatus: "paid",
+          depositPaid: b.totalPrice,
+          notes: `${b.notes ? b.notes + " | " : ""}Pelunasan kasir tunai oleh ${session?.name || "Kasir"}`,
+          googleDriveUrl: b.googleDriveUrl,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchData();
+      } else {
+        alert(data.error || "Gagal konfirmasi pembayaran.");
+      }
+    } catch (e) {
+      alert("Terjadi kendala saat konfirmasi pembayaran.");
+    }
+  };
+
   // Delete Booking
   const handleDeleteBooking = async (id: string) => {
     if (!confirm(`Hapus data reservasi ${id}?`)) return;
@@ -235,17 +299,22 @@ export default function BookingsManagementPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/10">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-mono tracking-widest uppercase text-[#ff6169] font-bold">
-              MODUL OPERASIONAL & KASIR
+            <span className="text-[10px] font-mono tracking-widest uppercase text-emerald-400 font-bold flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              {session?.role === "kasir" ? "SISTEM POS KASIR STUDIO" : "MODUL OPERASIONAL & KASIR"}
             </span>
             <span className="text-zinc-600">•</span>
-            <span className="text-[10px] font-mono text-zinc-400">RESERVASI STUDIO</span>
+            <span className="text-[10px] font-mono text-zinc-400">
+              {session?.role === "kasir" ? `KASIR: ${session?.name?.toUpperCase()}` : "RESERVASI STUDIO"}
+            </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-serif text-white font-medium">
-            Kelola Booking & Pembayaran
+            {session?.role === "kasir" ? "Sistem POS & Konfirmasi Booking" : "Kelola Booking & Pembayaran"}
           </h1>
           <p className="text-xs text-zinc-400 mt-1 font-light max-w-2xl leading-relaxed">
-            Kasir, Admin, dan Owner dapat memvalidasi uang muka (DP), mengubah status pelunasan, jadwal sesi, serta menghubungi klien via WhatsApp.
+            {session?.role === "kasir"
+              ? "Akses Kasir: Terima atau tolak booking sesi klien, validasi pelunasan tunai/DP, input link Google Drive hasil foto, dan chat WhatsApp klien."
+              : "Kasir, Admin, dan Owner dapat memvalidasi uang muka (DP), mengubah status pelunasan, jadwal sesi, input link Drive, serta menghubungi klien via WhatsApp."}
           </p>
         </div>
 
@@ -459,7 +528,44 @@ export default function BookingsManagementPage() {
 
                       {/* Actions */}
                       <td className="py-4 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
+                        <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                          {/* POS Kasir: Quick Accept/Reject for Pending Bookings */}
+                          {b.bookingStatus === "pending" && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => handleQuickStatus(b, "confirmed")}
+                                className="px-2.5 py-1 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-[10px] font-bold flex items-center gap-1 shadow transition-all cursor-pointer"
+                                title="Terima Sesi & Konfirmasi Booking"
+                              >
+                                <CheckCircle2 className="w-3 h-3" />
+                                <span>Terima</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleQuickStatus(b, "cancelled")}
+                                className="px-2 py-1 rounded-md bg-red-600/20 hover:bg-red-600/40 text-red-300 border border-red-500/30 font-mono text-[10px] flex items-center gap-1 transition-all cursor-pointer"
+                                title="Tolak Sesi & Batalkan"
+                              >
+                                <X className="w-3 h-3" />
+                                <span>Tolak</span>
+                              </button>
+                            </>
+                          )}
+
+                          {/* POS Kasir: Quick Cash Payment Button */}
+                          {b.paymentStatus === "unpaid" && (
+                            <button
+                              type="button"
+                              onClick={() => handleQuickPayment(b)}
+                              className="px-2 py-1 rounded-md bg-amber-500/15 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 font-mono text-[10px] flex items-center gap-1 transition-all cursor-pointer"
+                              title="Konfirmasi Pembayaran Kasir Lunas"
+                            >
+                              <CreditCard className="w-3 h-3 text-amber-400" />
+                              <span>Lunas Tunai</span>
+                            </button>
+                          )}
+
                           {/* WhatsApp Client button */}
                           <a
                             href={`https://wa.me/${waNumber}?text=${encodeURIComponent(
@@ -478,12 +584,12 @@ export default function BookingsManagementPage() {
                             type="button"
                             onClick={() => openEditBooking(b)}
                             className="p-1.5 rounded-lg border border-white/10 hover:border-white/30 text-zinc-300 hover:text-white"
-                            title="Update Status / Pembayaran"
+                            title="Update Status / Detail Lengkap"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
 
-                          {/* Delete (Owner / Admin) */}
+                          {/* Delete (Owner / Admin Only) */}
                           {(session?.role === "owner" || session?.role === "admin") && (
                             <button
                               type="button"

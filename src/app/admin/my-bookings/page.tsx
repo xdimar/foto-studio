@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Calendar,
   Clock,
@@ -23,6 +24,7 @@ import {
 import { StudioBooking, StaffSession } from "@/lib/types";
 
 export default function MyBookingsClientPortalPage() {
+  const router = useRouter();
   const [bookings, setBookings] = useState<StudioBooking[]>([]);
   const [session, setSession] = useState<StaffSession | null>(null);
   const [loading, setLoading] = useState(true);
@@ -39,23 +41,42 @@ export default function MyBookingsClientPortalPage() {
           fetch("/api/bookings").then((r) => r.json()),
         ]);
 
-        if (meRes.authenticated) setSession(meRes.user);
+        if (meRes.authenticated) {
+          setSession(meRes.user);
+
+          // If Staff/Manager/Kasir opens client portal, redirect them to Studio Bookings Management
+          if (meRes.user.role === "owner" || meRes.user.role === "admin" || meRes.user.role === "kasir") {
+            router.replace("/admin/bookings");
+            return;
+          }
+        }
+
         if (bRes.success) {
           const allBookings: StudioBooking[] = bRes.bookings || [];
-          // Filter if user role is 'user' to only their bookings, else show relevant
-          if (meRes.user?.role === "user" && meRes.user?.phone) {
-            const userPhoneClean = meRes.user.phone.replace(/\D/g, "");
-            const filtered = allBookings.filter((b) => {
-              const bPhoneClean = (b.clientPhone || "").replace(/\D/g, "");
-              return (
-                (userPhoneClean && bPhoneClean.includes(userPhoneClean.slice(-8))) ||
-                (meRes.user?.email && b.clientEmail?.toLowerCase() === meRes.user.email.toLowerCase())
+
+          if (meRes.user?.role === "user") {
+            const userEmail = (meRes.user.email || "").toLowerCase().trim();
+            const userPhone = (meRes.user.phone || "").replace(/\D/g, "");
+            const userName = (meRes.user.name || "").toLowerCase().trim();
+
+            const myOnlyBookings = allBookings.filter((b) => {
+              const bEmail = (b.clientEmail || "").toLowerCase().trim();
+              const bPhone = (b.clientPhone || "").replace(/\D/g, "");
+              const bName = (b.clientName || "").toLowerCase().trim();
+
+              const matchEmail = Boolean(userEmail && bEmail === userEmail);
+              const matchPhone = Boolean(
+                userPhone && userPhone.length >= 6 && bPhone.includes(userPhone.slice(-8))
               );
+              const matchName = Boolean(userName && bName.includes(userName));
+
+              return matchEmail || matchPhone || matchName;
             });
-            // If user has specific bookings show filtered, otherwise show all demo bookings for preview convenience
-            setBookings(filtered.length > 0 ? filtered : allBookings);
+
+            // STRICT ISOLATION: User only sees their own bookings, never other clients' bookings!
+            setBookings(myOnlyBookings);
           } else {
-            setBookings(allBookings);
+            setBookings([]);
           }
         }
       } catch (err) {
@@ -65,7 +86,7 @@ export default function MyBookingsClientPortalPage() {
       }
     }
     fetchMyBookings();
-  }, []);
+  }, [router]);
 
   const formatRupiah = (num: number) => {
     return new Intl.NumberFormat("id-ID", {

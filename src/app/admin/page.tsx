@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Users,
   Calendar,
@@ -89,9 +90,23 @@ export default function AdminOverviewPage() {
     fetchData();
   }, []);
 
+  const router = useRouter();
+
   const role = session?.role || "user";
   const isManager = role === "owner" || role === "admin";
   const isCashier = role === "kasir";
+
+  // Strict RBAC Guard: Only Owner and Admin can access the studio overview & financial analytics
+  useEffect(() => {
+    if (loading) return;
+    if (role === "user") {
+      router.replace("/admin/my-bookings");
+    } else if (role === "kasir") {
+      router.replace("/admin/bookings");
+    } else if (role === "magang") {
+      router.replace("/admin/calendar");
+    }
+  }, [loading, role, router]);
 
   const formatRupiah = (num: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -471,11 +486,13 @@ export default function AdminOverviewPage() {
   const pendingBookingsCount = bookings.filter((b) => b.bookingStatus === "pending").length;
   const confirmedBookingsCount = bookings.filter((b) => b.bookingStatus === "confirmed").length;
 
-  if (loading) {
+  if (loading || !isManager) {
     return (
       <div className="py-24 text-center space-y-3">
         <div className="w-8 h-8 border-2 border-[#ff6169] border-t-transparent rounded-full animate-spin mx-auto" />
-        <p className="text-xs font-mono text-zinc-400">Memuat data dashboard & analitik studio...</p>
+        <p className="text-xs font-mono text-zinc-400">
+          {!isManager ? "Mengalihkan ke panel menu yang diizinkan..." : "Memuat data dashboard & analitik studio..."}
+        </p>
       </div>
     );
   }
@@ -510,11 +527,11 @@ export default function AdminOverviewPage() {
         {/* Role Privileges Banner */}
         <div className="p-3.5 rounded-xl border border-white/10 bg-white/[0.02] flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-[#720C10]/40 text-[#ff6169] flex items-center justify-center shrink-0">
-            {role === "owner" && <Crown className="w-5 h-5 text-amber-400" />}
-            {role === "admin" && <ShieldCheck className="w-5 h-5 text-purple-400" />}
-            {role === "kasir" && <CreditCard className="w-5 h-5 text-emerald-400" />}
-            {role === "magang" && <GraduationCap className="w-5 h-5 text-sky-400" />}
-            {role === "user" && <Sparkles className="w-5 h-5 text-zinc-300" />}
+            {role === "owner" ? (
+              <Crown className="w-5 h-5 text-amber-400" />
+            ) : (
+              <ShieldCheck className="w-5 h-5 text-purple-400" />
+            )}
           </div>
           <div className="text-left">
             <p className="text-[10px] font-mono uppercase text-zinc-400">Hak Akses Aktif</p>

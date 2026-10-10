@@ -114,21 +114,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       name: "Ringkasan Overview",
       href: "/admin",
       icon: LayoutDashboard,
-      allowed: ["owner", "admin", "kasir", "magang", "user"],
+      allowed: ["owner", "admin"],
+      badge: "Studio",
     },
     {
-      name: "Kelola User & Staf",
-      href: "/admin/users",
-      icon: Users,
-      allowed: ["owner", "admin"],
-      badge: "CRUD",
+      name: "Reservasi & POS Kasir",
+      href: "/admin/bookings",
+      icon: Calendar,
+      allowed: ["owner", "admin", "kasir"],
+      badge: "Transaksi",
     },
     {
-      name: "Tarif & Layanan",
-      href: "/admin/pricing",
-      icon: DollarSign,
-      allowed: ["owner", "admin"],
-      badge: "Harga",
+      name: "Kalender & Jadwal Sesi",
+      href: "/admin/calendar",
+      icon: Clock,
+      allowed: ["owner", "admin", "kasir", "magang"],
+      badge: "Sesi",
+    },
+    {
+      name: "Dashboard & Unduh Foto",
+      href: "/admin/my-bookings",
+      icon: FolderDown,
+      allowed: ["user"],
+      badge: "Klien",
     },
     {
       name: "Paket & Menu Booking",
@@ -138,25 +146,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       badge: "Menu",
     },
     {
-      name: "Reservasi & Booking",
-      href: "/admin/bookings",
-      icon: Calendar,
-      allowed: ["owner", "admin", "kasir"],
-      badge: "Transaksi",
-    },
-    {
-      name: "Karya & Galeri",
-      href: "/admin/gallery",
-      icon: ImageIcon,
-      allowed: ["owner", "admin"],
-      badge: "Portofolio",
-    },
-    {
       name: "Ruang Studio",
       href: "/admin/spaces",
       icon: Layers,
       allowed: ["owner", "admin"],
       badge: "Ruangan",
+    },
+    {
+      name: "Karya & Galeri",
+      href: "/admin/gallery",
+      icon: ImageIcon,
+      allowed: ["owner", "admin", "magang"],
+      badge: "Portofolio",
+    },
+    {
+      name: "Tarif & Layanan",
+      href: "/admin/pricing",
+      icon: DollarSign,
+      allowed: ["owner", "admin"],
+      badge: "Harga",
     },
     {
       name: "Tentang Kami & Tim",
@@ -173,19 +181,52 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       badge: "Kontak",
     },
     {
-      name: "Portal & Unduh Foto",
-      href: "/admin/my-bookings",
-      icon: FolderDown,
-      allowed: ["user", "owner", "admin"],
-      badge: "G-Drive",
-    },
-    {
-      name: "Kalender & Jadwal Sesi",
-      href: "/admin/calendar",
-      icon: Clock,
-      allowed: ["owner", "admin", "kasir", "magang"],
+      name: "Kelola User & Staf",
+      href: "/admin/users",
+      icon: Users,
+      allowed: ["owner", "admin"],
+      badge: "Staf",
     },
   ];
+
+  // RBAC Route Guard: ensure user is not in a forbidden path
+  useEffect(() => {
+    if (loading || !session) return;
+
+    // Check if accessing /admin root
+    if (pathname === "/admin") {
+      if (role === "user") {
+        router.replace("/admin/my-bookings");
+        return;
+      }
+      if (role === "kasir") {
+        router.replace("/admin/bookings");
+        return;
+      }
+      if (role === "magang") {
+        router.replace("/admin/calendar");
+        return;
+      }
+    }
+
+    // Check other sub-paths
+    const matchedItem = navItems.find((item) => {
+      if (item.href === "/admin") return pathname === "/admin";
+      return pathname.startsWith(item.href);
+    });
+
+    if (matchedItem && !matchedItem.allowed.includes(role)) {
+      if (role === "user") {
+        router.replace("/admin/my-bookings");
+      } else if (role === "kasir") {
+        router.replace("/admin/bookings");
+      } else if (role === "magang") {
+        router.replace("/admin/calendar");
+      } else {
+        router.replace("/admin");
+      }
+    }
+  }, [loading, session, role, pathname, router]);
 
   const visibleNav = navItems.filter((item) => item.allowed.includes(role));
 
