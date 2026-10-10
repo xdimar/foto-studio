@@ -37,12 +37,11 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/auth') &&
-    !request.nextUrl.pathname.startsWith('/_next') &&
-    request.nextUrl.pathname !== '/'
-  ) {
+  const staffSession = request.cookies.get('origine_session')?.value
+
+  const isProtectedAdminRoute = request.nextUrl.pathname.startsWith('/admin')
+
+  if (!user && !staffSession && isProtectedAdminRoute) {
     const url = request.nextUrl.clone()
     url.pathname = '/auth/login'
     return NextResponse.redirect(url)
