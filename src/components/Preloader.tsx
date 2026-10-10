@@ -26,8 +26,13 @@ export default function Preloader({ onComplete, isReplaying = false }: Preloader
   const [preloaderActive, setPreloaderActive] = useState(true);
 
   useEffect(() => {
-    // Lock body scrolling during preloader
-    document.body.style.overflow = "hidden";
+    // Safety fallback timer so scroll is NEVER stuck even if animations delay
+    const fallbackTimer = setTimeout(() => {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+      setPreloaderActive(false);
+      onComplete();
+    }, 6000);
 
     // Ensure elements are present
     if (
@@ -38,8 +43,16 @@ export default function Preloader({ onComplete, isReplaying = false }: Preloader
       !progressContainerRef.current ||
       !progressFillRef.current
     ) {
+      clearTimeout(fallbackTimer);
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+      setPreloaderActive(false);
+      onComplete();
       return;
     }
+
+    // Lock body scrolling during active preloader
+    document.body.style.overflow = "hidden";
 
     const ctx = gsap.context(() => {
       // 1. INITIAL SETUP
@@ -91,10 +104,13 @@ export default function Preloader({ onComplete, isReplaying = false }: Preloader
 
       // Measure natural width of the text group
       // Temporarily expand to calculate exact scrollWidth
-      const currentWidth = textGroupElRef.current.style.width;
-      textGroupElRef.current.style.width = "auto";
-      const naturalTextWidth = textGroupElRef.current.scrollWidth || 220;
-      textGroupElRef.current.style.width = currentWidth;
+      const textGroupEl = textGroupElRef.current;
+      if (!textGroupEl) return;
+
+      const currentWidth = textGroupEl.style.width;
+      textGroupEl.style.width = "auto";
+      const naturalTextWidth = textGroupEl.scrollWidth || 220;
+      textGroupEl.style.width = currentWidth;
 
       // MASTER TIMELINE
       const tl = gsap.timeline({
@@ -273,21 +289,40 @@ export default function Preloader({ onComplete, isReplaying = false }: Preloader
       });
 
       function finishSequence() {
+        clearTimeout(fallbackTimer);
         document.body.style.overflow = "";
+        document.documentElement.style.overflow = "";
+        const navSlot = document.getElementById("nav-logo-slot");
+        if (navSlot) {
+          navSlot.style.opacity = "1";
+        }
         setPreloaderActive(false);
         onComplete();
       }
     });
 
     return () => {
+      clearTimeout(fallbackTimer);
       ctx.revert();
       document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
     };
   }, [onComplete, isReplaying]);
 
   if (!preloaderActive) {
     return null;
   }
+
+  const handleSkip = () => {
+    document.body.style.overflow = "";
+    document.documentElement.style.overflow = "";
+    const navSlot = document.getElementById("nav-logo-slot");
+    if (navSlot) {
+      navSlot.style.opacity = "1";
+    }
+    setPreloaderActive(false);
+    onComplete();
+  };
 
   return (
     <div
@@ -299,13 +334,24 @@ export default function Preloader({ onComplete, isReplaying = false }: Preloader
       <div className="absolute inset-0 bg-radial from-transparent via-[#720C10] to-[#480609] opacity-80 pointer-events-none" />
       <div className="absolute inset-0 film-grain opacity-20 pointer-events-none" />
 
-      {/* Decorative Atelier Header Mark */}
+      {/* Decorative Header Mark */}
       <div className="absolute top-8 left-8 sm:top-10 sm:left-12 flex items-center gap-3">
         <span className="w-2 h-2 rounded-full bg-white/60 animate-ping" />
         <span className="text-[10px] sm:text-xs font-mono tracking-[0.3em] uppercase text-white/50">
-          ATELIER ORIGINE • EST. 2024
+          ORIGINE STUDIO • EST. 2024
         </span>
       </div>
+
+      {/* Skip button for instant navigation & accessibility */}
+      <button
+        type="button"
+        onClick={handleSkip}
+        className="absolute top-7 right-6 sm:top-9 sm:right-12 z-30 px-3.5 py-1.5 rounded-full bg-black/40 hover:bg-black/70 border border-white/20 hover:border-white/40 text-[10px] sm:text-xs font-mono tracking-widest uppercase text-white/80 hover:text-white transition-all backdrop-blur-md cursor-pointer shadow-lg"
+        title="Lewati intro langsung ke beranda"
+        aria-label="Lewati animasi intro"
+      >
+        Lewati Intro ✕
+      </button>
 
       {/* Decorative Viewport Frame Markers (Editorial Camera Aesthetic) */}
       <div className="absolute top-6 right-6 sm:top-10 sm:right-12 font-mono text-[10px] text-white/40 tracking-widest hidden sm:block">
@@ -332,6 +378,13 @@ export default function Preloader({ onComplete, isReplaying = false }: Preloader
           onScriptERef={(el) => (scriptEElRef.current = el)}
           onSubtextRef={(el) => (subtextElRef.current = el)}
         />
+      </div>
+
+      {/* Studio Official Tagline */}
+      <div className="relative z-10 mt-3 text-center">
+        <p className="text-xs sm:text-sm font-serif italic text-white/75 tracking-wider">
+          Timeless Memories From the Origine
+        </p>
       </div>
 
       {/* PROGRESS BAR & DYNAMIC STATUS (Fase 3) */}

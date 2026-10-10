@@ -1,26 +1,43 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import Preloader from "@/components/Preloader";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import PortfolioGrid from "@/components/PortfolioGrid";
 import StudioSpaces from "@/components/StudioSpaces";
-import BookingEstimator from "@/components/BookingEstimator";
-import AtelierAbout from "@/components/AtelierAbout";
+import BookingTeaser from "@/components/BookingTeaser";
+import StudioAbout from "@/components/StudioAbout";
+import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
 import { RotateCcw } from "lucide-react";
 
 export default function Home() {
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
+  const [shouldShowPreloader, setShouldShowPreloader] = useState<boolean>(true);
   const [replayKey, setReplayKey] = useState<number>(0);
+
+  useEffect(() => {
+    // Ensure every refresh plays the preloader and scrolls cleanly to top
+    try {
+      sessionStorage.removeItem("origine_intro_seen");
+      if ("scrollRestoration" in window.history) {
+        window.history.scrollRestoration = "manual";
+      }
+      window.scrollTo(0, 0);
+    } catch (_) {}
+  }, []);
 
   const handlePreloaderComplete = useCallback(() => {
     setIsLoaded(true);
+    setShouldShowPreloader(false);
+    document.body.style.overflow = "";
+    document.documentElement.style.overflow = "";
   }, []);
 
   const triggerReplay = useCallback(() => {
     setIsLoaded(false);
+    setShouldShowPreloader(true);
     // Scroll smoothly to top for perfect transition experience
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
     setReplayKey((prev) => prev + 1);
@@ -29,11 +46,13 @@ export default function Home() {
   return (
     <div className="relative min-h-screen bg-[#0d0d0d] text-[#F9F8F6]">
       {/* 1. CINEMATIC PRELOADER WITH PRECISION FLIP LOGO TRANSITION */}
-      <Preloader
-        key={replayKey}
-        onComplete={handlePreloaderComplete}
-        isReplaying={replayKey > 0}
-      />
+      {shouldShowPreloader && (
+        <Preloader
+          key={replayKey}
+          onComplete={handlePreloaderComplete}
+          isReplaying={replayKey > 0}
+        />
+      )}
 
       {/* 2. FIXED NAVBAR WITH FLIP TARGET SLOT */}
       <Navbar isLoaded={isLoaded} onReplay={triggerReplay} />
@@ -48,11 +67,14 @@ export default function Home() {
         {/* 5. STUDIO ARCHITECTURE & SPACES */}
         <StudioSpaces />
 
-        {/* 6. INTERACTIVE BOOKING ESTIMATOR & RESERVATION */}
-        <BookingEstimator />
+        {/* 6. EDITORIAL RATES TEASER & CTA TO FULL BOOKING */}
+        <BookingTeaser />
 
-        {/* 7. ATELIER ABOUT & CLIENT ROSTER */}
-        <AtelierAbout />
+        {/* 5. ABOUT & CLIENT ROSTER (Text Left, Image Right) */}
+        <StudioAbout />
+
+        {/* 6. CONTACT & CONCIERGE (Location Left, Form Right) */}
+        <ContactSection />
       </main>
 
       {/* 8. EDITORIAL FOOTER */}

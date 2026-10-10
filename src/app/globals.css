@@ -52,3 +52,71 @@
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.12);
 }
+
+/* ==========================================================================
+   STORYTELLING SCROLL ANIMATION SUITE (DISTINCT ENTRANCE & EXIT ANIMATIONS)
+   ========================================================================== */
+.story-anim-container {
+  will-change: transform, opacity, filter;
+  transition-property: transform, opacity, filter;
+  transition-duration: 750ms;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 1. Hero: Cinematic Split (Kata-kata di KIRI, Gambar di KANAN) */
+.hero-left-enter { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
+.hero-left-exit-up { opacity: 0; transform: translate3d(0, -60px, 0) scale(0.96); filter: blur(8px); }
+.hero-left-exit-down { opacity: 0; transform: translate3d(-70px, 0, 0); filter: blur(8px); }
+
+.hero-right-enter { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
+.hero-right-exit-up { opacity: 0; transform: translate3d(0, -60px, 0) scale(0.93); filter: blur(10px); }
+.hero-right-exit-down { opacity: 0; transform: translate3d(80px, 0, 0) scale(1.05); filter: blur(8px); }
+
+/* 2. Portfolio: Editorial 3D Horizon (Gambar di KIRI, Tulisan di KANAN) */
+.port-left-enter { opacity: 1; transform: translate3d(0, 0, 0) perspective(1200px) rotateY(0deg) scale(1); filter: blur(0); }
+.port-left-exit-up { opacity: 0; transform: translate3d(-80px, -45px, 0) perspective(1200px) rotateY(-8deg) scale(0.94); filter: blur(8px); }
+.port-left-exit-down { opacity: 0; transform: translate3d(-100px, 50px, 0) perspective(1200px) rotateY(8deg) scale(0.92); filter: blur(8px); }
+
+.port-right-enter { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
+.port-right-exit-up { opacity: 0; transform: translate3d(70px, -40px, 0); filter: blur(8px); }
+.port-right-exit-down { opacity: 0; transform: translate3d(90px, 50px, 0); filter: blur(8px); }
+
+/* 3. Spaces: Architectural Curtain (Tulisan di KIRI, Gambar di KANAN) */
+.space-left-enter { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
+.space-left-exit-up { opacity: 0; transform: translate3d(0, -70px, 0) scale(0.96); filter: blur(8px); }
+.space-left-exit-down { opacity: 0; transform: translate3d(0, 70px, 0) scale(0.96); filter: blur(8px); }
+
+.space-right-enter { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
+.space-right-exit-up { opacity: 0; transform: translate3d(0, -50px, 0) scale(0.92); filter: blur(10px); }
+.space-right-exit-down { opacity: 0; transform: translate3d(90px, 0, 0) scale(0.92); filter: blur(8px); }
+
+/* 4. Rates: Prismatic 3D Depth (Estimator di KIRI, Tulisan di KANAN) */
+.rates-left-enter { opacity: 1; transform: perspective(1200px) rotateX(0deg) translate3d(0, 0, 0); filter: blur(0); }
+.rates-left-exit-up { opacity: 0; transform: perspective(1200px) rotateX(-12deg) translate3d(0, -60px, 0); filter: blur(8px); }
+.rates-left-exit-down { opacity: 0; transform: perspective(1200px) rotateX(12deg) translate3d(0, 70px, 0); filter: blur(8px); }
+
+.rates-right-enter { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
+.rates-right-exit-up { opacity: 0; transform: translate3d(60px, -40px, 0); filter: blur(8px); }
+.rates-right-exit-down { opacity: 0; transform: translate3d(80px, 50px, 0); filter: blur(8px); }
+
+/* 5. About: Chiaroscuro Flow (Tulisan di KIRI, Gambar di KANAN) */
+.about-left-enter { opacity: 1; transform: translate3d(0, 0, 0); filter: blur(0); }
+.about-left-exit-up { opacity: 0; transform: translate3d(-60px, -40px, 0); filter: blur(8px); }
+.about-left-exit-down { opacity: 0; transform: translate3d(-80px, 40px, 0); filter: blur(8px); }
+
+.about-right-enter { opacity: 1; transform: scale(1); filter: blur(0); }
+.about-right-exit-up { opacity: 0; transform: scale(0.9) translate3d(0, -40px, 0); filter: blur(10px); }
+.about-right-exit-down { opacity: 0; transform: scale(1.1) translate3d(0, 40px, 0); filter: blur(10px); }
+
+/* 6. Contact: Magnetic Beacon (Lokasi di KIRI, Form di KANAN) */
+.contact-left-enter { opacity: 1; transform: translate3d(0, 0, 0); filter: blur(0); }
+.contact-left-exit-up { opacity: 0; transform: translate3d(-50px, -40px, 0); filter: blur(8px); }
+.contact-left-exit-down { opacity: 0; transform: translate3d(-70px, 50px, 0); filter: blur(8px); }
+
+.contact-right-enter { opacity: 1; transform: translate3d(0, 0, 0); filter: blur(0); }
+.contact-right-exit-up { opacity: 0; transform: translate3d(50px, -40px, 0); filter: blur(8px); }
+.contact-right-exit-down { opacity: 0; transform: translate3d(70px, 50px, 0); filter: blur(8px); }
+
+/* 7. Footer: Starlight Horizon */
+.footer-enter { opacity: 1; transform: translate3d(0, 0, 0); filter: blur(0); }
+.footer-exit-down { opacity: 0; transform: translate3d(0, 50px, 0); filter: blur(8px); }

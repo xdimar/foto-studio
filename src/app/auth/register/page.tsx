@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import OrigineLogo from "@/components/OrigineLogo";
-import { createClient } from "@/lib/supabase-client";
 import { ArrowLeft, Lock, Mail, User, Building, AlertCircle, CheckCircle2 } from "lucide-react";
 
 export default function RegisterPage() {
@@ -17,8 +16,6 @@ export default function RegisterPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  const supabase = createClient();
-
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -26,29 +23,31 @@ export default function RegisterPage() {
     setSuccessMsg(null);
 
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-            agency: agency,
-          },
-        },
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName,
+          agency,
+          email,
+          password,
+        }),
       });
 
-      if (error) {
-        setErrorMsg(error.message);
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        setErrorMsg(data.error || "Pendaftaran gagal. Silakan coba kembali.");
       } else {
-        setSuccessMsg(
-          "Akun produser berhasil didaftarkan. Silakan periksa email Anda atau masuk langsung ke portal."
-        );
+        setSuccessMsg(data.message || "Pendaftaran akun produser berhasil!");
         setTimeout(() => {
-          router.push("/auth/login");
-        }, 2000);
+          router.push(data.redirectUrl || "/admin/my-bookings");
+          router.refresh();
+        }, 1200);
       }
-    } catch (err: any) {
-      setErrorMsg(err.message || "Terjadi kesalahan saat pendaftaran akun.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Terjadi kesalahan saat pendaftaran akun.";
+      setErrorMsg(message);
     } finally {
       setLoading(false);
     }
@@ -70,7 +69,7 @@ export default function RegisterPage() {
           <span>Kembali ke Studio</span>
         </Link>
         <span className="text-[10px] font-mono tracking-widest text-[#e03a42] uppercase">
-          PENDAFTARAN ATELIER KLIEN
+          PENDAFTARAN KLIEN RESMI
         </span>
       </div>
 
@@ -176,13 +175,13 @@ export default function RegisterPage() {
               disabled={loading}
               className="w-full py-3 mt-3 rounded-full bg-[#720C10] hover:bg-[#8e1015] text-white text-xs font-semibold uppercase tracking-wider transition-all duration-300 shadow-xl shadow-[#720C10]/30 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Mendaftarkan..." : "Buat Akun Atelier"}
+              {loading ? "Mendaftarkan..." : "Buat Akun Klien"}
             </button>
           </form>
 
           <div className="mt-8 pt-6 border-t border-white/10 text-center">
             <p className="text-xs text-zinc-400 font-light">
-              Sudah memiliki akun atelier?{" "}
+              Sudah memiliki akun?{" "}
               <Link
                 href="/auth/login"
                 className="text-[#ff6169] hover:text-white font-medium transition-colors"
@@ -196,7 +195,7 @@ export default function RegisterPage() {
 
       {/* Bottom Footer Note */}
       <div className="max-w-md w-full mx-auto text-center text-[10px] font-mono text-zinc-600 relative z-10">
-        PROTOKOL KEAMANAN ATELIER ORIGINE • TERENKRIPSI PENUH
+        PROTOKOL KEAMANAN ORIGINE STUDIO • TERENKRIPSI PENUH
       </div>
     </div>
   );

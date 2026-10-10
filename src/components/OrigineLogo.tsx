@@ -20,7 +20,7 @@ export default function OrigineLogo({
   onSymbolRef,
   onTextGroupRef,
   onLettersRef,
-  onScriptERef,
+  onScriptERef: _onScriptERef,
   onSubtextRef,
   variant = "full",
 }: OrigineLogoProps) {

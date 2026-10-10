@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <!-- Luxury dark background container for perfect contrast in both dark and light browser tabs -->
+  <rect width="512" height="512" rx="108" fill="#0d0d0d"/>
+  
+  <!-- Subtle signature crimson accent border -->
+  <rect width="504" height="504" x="4" y="4" rx="104" fill="none" stroke="#720C10" stroke-width="8" opacity="0.6"/>
+
+  <!-- Mask for the vertical slit aperture cutout -->
+  <defs>
+    <mask id="origine-slit">
+      <rect width="512" height="512" fill="white"/>
+      <!-- Vertical slit line in the center -->
+      <rect x="238" y="104" width="36" height="304" rx="18" fill="black"/>
+    </mask>
+  </defs>
+
+  <!-- Big white letter O / aperture symbol -->
+  <circle cx="256" cy="256" r="184" fill="#FFFFFF" mask="url(#origine-slit)"/>
+</svg>
