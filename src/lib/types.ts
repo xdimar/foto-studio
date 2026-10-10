@@ -156,6 +156,7 @@ export interface PersonOption {
 export interface BookingExperiencePackage {
   id: string;
   name: string;
+  category?: string;
   badge: string;
   badgeColor?: string;
   image: string;

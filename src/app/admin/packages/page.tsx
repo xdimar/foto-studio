@@ -40,6 +40,23 @@ export default function BookingPackagesManagementPage() {
   const [description, setDescription] = useState("");
   const [featuresText, setFeaturesText] = useState("");
   const [isActive, setIsActive] = useState(true);
+  const [category, setCategory] = useState("self-studio");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+
+  const CATEGORY_OPTIONS = [
+    { id: "self-studio", label: "Self Studio" },
+    { id: "pas-photo", label: "Pas Photo" },
+    { id: "personal", label: "Personal Portrait" },
+    { id: "maternity", label: "Maternity" },
+    { id: "group", label: "Group (Indoor/Outdoor)" },
+    { id: "family", label: "Family (Indoor/Outdoor)" },
+    { id: "birthday", label: "Birthday (Indoor/Outdoor)" },
+    { id: "graduation", label: "Graduation / Wisuda" },
+    { id: "yearbook", label: "Yearbook / Buku Tahunan" },
+    { id: "event", label: "Dokumentasi Acara" },
+    { id: "sewa", label: "Sewa Tempat Studio" },
+    { id: "drone", label: "Shot Drone FPV/Aerial" },
+  ];
 
   // Duration & Person Dynamic Sub-Lists
   const [durationOptions, setDurationOptions] = useState<DurationOption[]>([]);
@@ -86,6 +103,7 @@ export default function BookingPackagesManagementPage() {
       "Kamera Full-Frame & Studio Lighting Otomatis\nWireless Remote Shutter Clicker\nLive Preview Monitor\nUnlimited Shots"
     );
     setIsActive(true);
+    setCategory("self-studio");
     setDurationOptions([
       { id: `dur-${Date.now()}-1`, label: "15 Menit", minutes: 15, price: 10000 },
       { id: `dur-${Date.now()}-2`, label: "30 Menit", minutes: 30, price: 20000, isPopular: true },
@@ -108,6 +126,7 @@ export default function BookingPackagesManagementPage() {
     setDescription(pkg.description);
     setFeaturesText(pkg.features?.join("\n") || "");
     setIsActive(pkg.isActive !== false);
+    setCategory(pkg.category || "self-studio");
     setDurationOptions([...pkg.durationOptions]);
     setPersonOptions([...pkg.personOptions]);
     setIsModalOpen(true);
@@ -191,6 +210,7 @@ export default function BookingPackagesManagementPage() {
     const payload: Partial<BookingExperiencePackage> = {
       ...(editingPkg ? { id: editingPkg.id } : {}),
       name: name.trim(),
+      category: category.trim(),
       badge: badge.trim(),
       badgeColor,
       image: image.trim(),
@@ -340,7 +360,44 @@ export default function BookingPackagesManagementPage() {
         </div>
       )}
 
-      {/* 2. PACKAGES GRID */}
+      {/* 2. CATEGORY FILTER TABS */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <button
+          type="button"
+          onClick={() => setCategoryFilter("all")}
+          className={`px-3.5 py-1.5 rounded-xl text-xs font-mono whitespace-nowrap transition-all border ${
+            categoryFilter === "all"
+              ? "bg-[#720C10] text-white border-[#ff6169] font-bold shadow-md shadow-[#720C10]/20"
+              : "bg-[#141414] text-zinc-400 hover:text-white border-white/10"
+          }`}
+        >
+          Semua Kategori ({packages.length})
+        </button>
+        {CATEGORY_OPTIONS.map((cat) => {
+          const count = packages.filter((p) => p.category === cat.id).length;
+          if (count === 0) return null;
+          const isActive = categoryFilter === cat.id;
+          return (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => setCategoryFilter(cat.id)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-mono whitespace-nowrap transition-all flex items-center gap-1.5 border ${
+                isActive
+                  ? "bg-[#720C10] text-white border-[#ff6169] font-bold shadow-md shadow-[#720C10]/20"
+                  : "bg-[#141414] text-zinc-400 hover:text-white border-white/10"
+              }`}
+            >
+              <span>{cat.label}</span>
+              <span className={`text-[10px] px-1.5 py-0.2 rounded ${isActive ? "bg-white/20 text-white" : "bg-white/5 text-zinc-500"}`}>
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* 3. PACKAGES GRID */}
       {loading ? (
         <div className="py-20 text-center text-xs font-mono text-zinc-500">
           Memuat data paket booking studio...
@@ -362,7 +419,7 @@ export default function BookingPackagesManagementPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-          {packages.map((pkg) => (
+          {packages.filter((p) => categoryFilter === "all" || p.category === categoryFilter).map((pkg) => (
             <div
               key={pkg.id}
               className={`rounded-2xl bg-[#141414] border overflow-hidden shadow-xl flex flex-col justify-between transition-all ${
@@ -402,6 +459,11 @@ export default function BookingPackagesManagementPage() {
                 </div>
 
                 <div className="absolute bottom-4 left-4 right-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[9px] font-mono uppercase px-2 py-0.5 rounded bg-white/20 text-white backdrop-blur-md">
+                      {pkg.category || "studio"}
+                    </span>
+                  </div>
                   <h3 className="text-xl font-serif text-white font-medium drop-shadow-md">
                     {pkg.name}
                   </h3>
@@ -558,6 +620,24 @@ export default function BookingPackagesManagementPage() {
                     className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-white/15 text-white text-xs font-mono focus:outline-none focus:border-[#ff6169]"
                   />
                 </div>
+              </div>
+
+              {/* Row 1.5: Kategori Layanan */}
+              <div>
+                <label className="block text-xs font-mono uppercase text-zinc-400 mb-1.5 font-semibold">
+                  Kategori Layanan Studio <span className="text-[#ff6169]">*</span>
+                </label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-white/15 text-white text-xs font-mono focus:outline-none focus:border-[#ff6169]"
+                >
+                  {CATEGORY_OPTIONS.map((c) => (
+                    <option key={c.id} value={c.id} className="bg-zinc-900 text-white">
+                      {c.label} ({c.id})
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Row 2: Foto & Tagline Tarif */}

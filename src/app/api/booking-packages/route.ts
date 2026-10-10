@@ -27,6 +27,7 @@ export async function POST(request: Request) {
     const body: Partial<BookingExperiencePackage> = await request.json();
     const {
       name,
+      category,
       badge,
       badgeColor,
       image,
@@ -48,6 +49,7 @@ export async function POST(request: Request) {
     const newPkg: BookingExperiencePackage = {
       id: `pkg-${Date.now()}`,
       name: name.trim(),
+      category: category?.trim() || 'studio',
       badge: badge?.trim() || 'Paket Studio',
       badgeColor: badgeColor?.trim() || 'bg-[#720C10] text-white border-[#720C10]/40',
       image: image.trim(),
