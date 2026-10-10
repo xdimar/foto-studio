@@ -55,6 +55,8 @@ export interface StudioBooking {
   notes?: string;
   createdAt: string;
   handledBy?: string;
+  googleDriveUrl?: string;
+  deliveredAt?: string;
 }
 
 export interface StudioGalleryItem {

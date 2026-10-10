@@ -172,7 +172,7 @@ export async function PUT(request: Request) {
 
   try {
     const body = await request.json();
-    const { id, bookingStatus, paymentStatus, depositPaid, notes } = body;
+    const { id, bookingStatus, paymentStatus, depositPaid, notes, googleDriveUrl, deliveredAt } = body;
 
     const db = getDatabase();
     const idx = db.bookings.findIndex((b) => b.id === id);
@@ -185,6 +185,15 @@ export async function PUT(request: Request) {
     if (paymentStatus) db.bookings[idx].paymentStatus = paymentStatus;
     if (depositPaid !== undefined) db.bookings[idx].depositPaid = Number(depositPaid);
     if (notes !== undefined) db.bookings[idx].notes = notes;
+    if (googleDriveUrl !== undefined) {
+      db.bookings[idx].googleDriveUrl = googleDriveUrl.trim();
+      if (googleDriveUrl.trim() && !db.bookings[idx].deliveredAt) {
+        db.bookings[idx].deliveredAt = deliveredAt || new Date().toISOString();
+      }
+    }
+    if (deliveredAt !== undefined) {
+      db.bookings[idx].deliveredAt = deliveredAt;
+    }
 
     db.bookings[idx].handledBy = `${session.name} (${session.role})`;
 

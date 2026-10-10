@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import {
   Users,
@@ -20,6 +20,16 @@ import {
   MapPin,
   CheckCircle2,
   Settings,
+  FileSpreadsheet,
+  TrendingUp,
+  PieChart,
+  BarChart3,
+  Filter,
+  Download,
+  Check,
+  CalendarRange,
+  CircleDollarSign,
+  Info,
 } from "lucide-react";
 import {
   StudioBooking,
@@ -39,6 +49,14 @@ export default function AdminOverviewPage() {
   const [aboutData, setAboutData] = useState<StudioAboutContent | null>(null);
   const [contactSettings, setContactSettings] = useState<StudioContactSettings | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Financial Filters & Chart States
+  const [timeFilter, setTimeFilter] = useState<"all" | "today" | "7days" | "month" | "year">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "paid" | "dp_paid" | "unpaid">("all");
+  const [donutMode, setDonutMode] = useState<"category" | "status">("category");
+  const [hoveredBarIndex, setHoveredBarIndex] = useState<number | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportSuccess, setExportSuccess] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -71,20 +89,6 @@ export default function AdminOverviewPage() {
     fetchData();
   }, []);
 
-  const totalRevenue = bookings
-    .filter((b) => b.paymentStatus === "paid" || b.paymentStatus === "dp_paid")
-    .reduce(
-      (sum, b) =>
-        sum +
-        (b.paymentStatus === "paid"
-          ? Number(b.totalPrice) || 0
-          : Number(b.depositPaid) || 0),
-      0
-    );
-
-  const pendingBookings = bookings.filter((b) => b.bookingStatus === "pending").length;
-  const confirmedBookings = bookings.filter((b) => b.bookingStatus === "confirmed").length;
-
   const role = session?.role || "user";
   const isManager = role === "owner" || role === "admin";
   const isCashier = role === "kasir";
@@ -97,13 +101,389 @@ export default function AdminOverviewPage() {
     }).format(num);
   };
 
+  // 1. FILTERED FINANCIAL DATA CALCULATION
+  const filteredBookings = useMemo(() => {
+    const today = new Date();
+    const todayStr = today.toISOString().split("T")[0];
+
+    return bookings.filter((b) => {
+      // Payment status filter
+      if (statusFilter !== "all" && b.paymentStatus !== statusFilter) {
+        return false;
+      }
+
+      // Time range filter
+      if (timeFilter === "all") return true;
+
+      const bookingDate = b.date ? new Date(b.date) : new Date(b.createdAt);
+      if (isNaN(bookingDate.getTime())) return true;
+
+      if (timeFilter === "today") {
+        return b.date === todayStr || b.createdAt.startsWith(todayStr);
+      }
+
+      if (timeFilter === "7days") {
+        const diffMs = today.getTime() - bookingDate.getTime();
+        const diffDays = diffMs / (1000 * 60 * 60 * 24);
+        return diffDays >= -1 && diffDays <= 7;
+      }
+
+      if (timeFilter === "month") {
+        return (
+          bookingDate.getMonth() === today.getMonth() &&
+          bookingDate.getFullYear() === today.getFullYear()
+        );
+      }
+
+      if (timeFilter === "year") {
+        return bookingDate.getFullYear() === today.getFullYear();
+      }
+
+      return true;
+    });
+  }, [bookings, timeFilter, statusFilter]);
+
+  // Financial Metrics from Filtered Data
+  const financialMetrics = useMemo(() => {
+    let realizedCashIn = 0; // Uang yang sudah masuk (Lunas 100% / DP Terbayar)
+    let totalContractValue = 0; // Total nilai sesi
+    let outstandingReceivable = 0; // Piutang belum lunas
+    let paidCount = 0;
+
+    filteredBookings.forEach((b) => {
+      const price = Number(b.totalPrice) || 0;
+      const dp = Number(b.depositPaid) || 0;
+      totalContractValue += price;
+
+      if (b.paymentStatus === "paid") {
+        realizedCashIn += price;
+        paidCount++;
+      } else if (b.paymentStatus === "dp_paid") {
+        realizedCashIn += dp;
+        outstandingReceivable += Math.max(0, price - dp);
+      } else {
+        outstandingReceivable += price;
+      }
+    });
+
+    const averageOrderValue =
+      filteredBookings.length > 0 ? Math.round(totalContractValue / filteredBookings.length) : 0;
+
+    const paidRate =
+      filteredBookings.length > 0
+        ? Math.round((paidCount / filteredBookings.length) * 100)
+        : 0;
+
+    return {
+      realizedCashIn,
+      totalContractValue,
+      outstandingReceivable,
+      averageOrderValue,
+      paidCount,
+      paidRate,
+      count: filteredBookings.length,
+    };
+  }, [filteredBookings]);
+
+  // 2. GENERAL CHART DATA (BAR CHART: REVENUE TREND PER SESSION DATE)
+  const barChartData = useMemo(() => {
+    // Group by date
+    const dateMap = new Map<string, { date: string; revenue: number; count: number; label: string }>();
+
+    filteredBookings.forEach((b) => {
+      const dKey = b.date || b.createdAt.split("T")[0] || "Lainnya";
+      const cash =
+        b.paymentStatus === "paid"
+          ? Number(b.totalPrice) || 0
+          : b.paymentStatus === "dp_paid"
+          ? Number(b.depositPaid) || 0
+          : 0;
+
+      if (!dateMap.has(dKey)) {
+        // Format label
+        let displayLabel = dKey;
+        try {
+          const parts = dKey.split("-");
+          if (parts.length === 3) {
+            displayLabel = `${parts[2]}/${parts[1]}`;
+          }
+        } catch (_) {}
+
+        dateMap.set(dKey, {
+          date: dKey,
+          revenue: cash,
+          count: 1,
+          label: displayLabel,
+        });
+      } else {
+        const item = dateMap.get(dKey)!;
+        item.revenue += cash;
+        item.count += 1;
+      }
+    });
+
+    // If few or empty, provide pleasant visual fallback bars based on bookings
+    const items = Array.from(dateMap.values()).sort((a, b) => a.date.localeCompare(b.date));
+
+    // Cap to 10 latest bars for clean aesthetic
+    const displayed = items.slice(-10);
+    const maxRev = Math.max(...displayed.map((d) => d.revenue), 100000);
+
+    return {
+      bars: displayed,
+      maxRevenue: maxRev,
+    };
+  }, [filteredBookings]);
+
+  // 3. DONUT / PIE CHART DATA (CATEGORY OR STATUS BREAKDOWN)
+  const donutChartData = useMemo(() => {
+    const palette = [
+      { fill: "#10b981", name: "Emerald" },
+      { fill: "#ff6169", name: "Origine Rose" },
+      { fill: "#38bdf8", name: "Sky Blue" },
+      { fill: "#f59e0b", name: "Amber" },
+      { fill: "#a855f7", name: "Purple" },
+      { fill: "#e11d48", name: "Crimson" },
+    ];
+
+    if (donutMode === "status") {
+      let paidTotal = 0;
+      let dpTotal = 0;
+      let unpaidTotal = 0;
+      let paidCount = 0;
+      let dpCount = 0;
+      let unpaidCount = 0;
+
+      filteredBookings.forEach((b) => {
+        const price = Number(b.totalPrice) || 0;
+        const dp = Number(b.depositPaid) || 0;
+        if (b.paymentStatus === "paid") {
+          paidTotal += price;
+          paidCount++;
+        } else if (b.paymentStatus === "dp_paid") {
+          dpTotal += dp;
+          dpCount++;
+        } else {
+          unpaidTotal += price;
+          unpaidCount++;
+        }
+      });
+
+      const total = paidTotal + dpTotal + unpaidTotal || 1;
+      const segments = [
+        {
+          label: "Lunas (Paid)",
+          value: paidTotal,
+          count: paidCount,
+          percent: Math.round((paidTotal / total) * 100),
+          color: "#10b981",
+        },
+        {
+          label: "DP Terbayar",
+          value: dpTotal,
+          count: dpCount,
+          percent: Math.round((dpTotal / total) * 100),
+          color: "#38bdf8",
+        },
+        {
+          label: "Belum Bayar",
+          value: unpaidTotal,
+          count: unpaidCount,
+          percent: Math.round((unpaidTotal / total) * 100),
+          color: "#f59e0b",
+        },
+      ].filter((s) => s.value > 0);
+
+      return { segments, totalAmount: paidTotal + dpTotal };
+    }
+
+    // Default: Group by Service Category / Room
+    const catMap = new Map<string, { label: string; value: number; count: number }>();
+
+    filteredBookings.forEach((b) => {
+      const room = b.roomName || "Sesi Studio";
+      let cat = "Layanan Studio";
+      if (room.toLowerCase().includes("self")) cat = "Self Studio";
+      else if (room.toLowerCase().includes("pas photo")) cat = "Pas Photo";
+      else if (room.toLowerCase().includes("cyclorama") || room.toLowerCase().includes("01"))
+        cat = "Studio 01: Cyclorama";
+      else if (room.toLowerCase().includes("loft") || room.toLowerCase().includes("02"))
+        cat = "Studio 02: Daylight Loft";
+      else if (room.toLowerCase().includes("noir") || room.toLowerCase().includes("03"))
+        cat = "Studio 03: Chiaroscuro";
+      else if (room.toLowerCase().includes("wisuda") || room.toLowerCase().includes("graduation"))
+        cat = "Graduation & Wisuda";
+      else if (room.toLowerCase().includes("group") || room.toLowerCase().includes("family"))
+        cat = "Grup & Keluarga";
+      else cat = room.split(":")[0];
+
+      const cash =
+        b.paymentStatus === "paid"
+          ? Number(b.totalPrice) || 0
+          : b.paymentStatus === "dp_paid"
+          ? Number(b.depositPaid) || 0
+          : 0;
+
+      if (!catMap.has(cat)) {
+        catMap.set(cat, { label: cat, value: cash, count: 1 });
+      } else {
+        const item = catMap.get(cat)!;
+        item.value += cash;
+        item.count += 1;
+      }
+    });
+
+    const list = Array.from(catMap.values()).filter((item) => item.value > 0);
+    const totalAmount = list.reduce((sum, item) => sum + item.value, 0) || 1;
+
+    const segments = list.map((item, idx) => ({
+      ...item,
+      percent: Math.round((item.value / totalAmount) * 100),
+      color: palette[idx % palette.length].fill,
+    }));
+
+    return { segments, totalAmount };
+  }, [filteredBookings, donutMode]);
+
+  // 4. EXPORT TO EXCEL (.CSV UTF-8 BOM)
+  const handleExportExcel = () => {
+    setIsExporting(true);
+
+    try {
+      const headers = [
+        "Kode Booking",
+        "Tanggal Sesi",
+        "Waktu Sesi",
+        "Nama Klien",
+        "No. WhatsApp",
+        "Email Klien",
+        "Paket / Ruang Studio",
+        "Total Biaya (IDR)",
+        "DP Terbayar (IDR)",
+        "Sisa Pelunasan (IDR)",
+        "Status Pembayaran",
+        "Status Sesi",
+        "Link Google Drive",
+        "Catatan Sesi",
+        "Waktu Input Booking",
+      ];
+
+      const rows = filteredBookings.map((b) => {
+        const total = Number(b.totalPrice) || 0;
+        const dp = Number(b.depositPaid) || 0;
+        const sisa = b.paymentStatus === "paid" ? 0 : Math.max(0, total - dp);
+
+        const statusBayarLabel =
+          b.paymentStatus === "paid"
+            ? "Lunas"
+            : b.paymentStatus === "dp_paid"
+            ? "DP Terbayar"
+            : "Belum Bayar";
+
+        return [
+          `"${b.id}"`,
+          `"${b.date || "-"}"`,
+          `"${b.timeSlot || "-"}"`,
+          `"${(b.clientName || "").replace(/"/g, '""')}"`,
+          `"${(b.clientPhone || "").replace(/"/g, '""')}"`,
+          `"${(b.clientEmail || "").replace(/"/g, '""')}"`,
+          `"${(b.roomName || "").replace(/"/g, '""')}"`,
+          total,
+          dp,
+          sisa,
+          `"${statusBayarLabel}"`,
+          `"${b.bookingStatus}"`,
+          `"${(b.googleDriveUrl || "-").replace(/"/g, '""')}"`,
+          `"${(b.notes || "-").replace(/"/g, '""')}"`,
+          `"${b.createdAt || "-"}"`,
+        ].join(",");
+      });
+
+      // Total Summary Row
+      const totalSemuaBiaya = filteredBookings.reduce(
+        (sum, b) => sum + (Number(b.totalPrice) || 0),
+        0
+      );
+      const totalSemuaDP = filteredBookings.reduce(
+        (sum, b) => sum + (Number(b.depositPaid) || 0),
+        0
+      );
+      const totalSemuaSisa = totalSemuaBiaya - totalSemuaDP;
+
+      const summaryRow = [
+        '"TOTAL RINGKASAN"',
+        '""',
+        '""',
+        '""',
+        '""',
+        '""',
+        '""',
+        totalSemuaBiaya,
+        totalSemuaDP,
+        totalSemuaSisa,
+        '""',
+        '""',
+        '""',
+        '""',
+        '""',
+      ].join(",");
+
+      // Combine with UTF-8 BOM (\uFEFF) for 100% native Excel compatibility on Windows & Mac
+      const csvContent =
+        "\uFEFF" + [headers.join(","), ...rows, summaryRow].join("\r\n");
+
+      const blob = new Blob([csvContent], {
+        type: "text/csv;charset=utf-8;",
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const dateStr = new Date().toISOString().split("T")[0];
+      link.setAttribute("href", url);
+      link.setAttribute(
+        "download",
+        `Laporan-Keuangan-Origine-Studio-${dateStr}.csv`
+      );
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      setExportSuccess(true);
+      setTimeout(() => setExportSuccess(false), 3000);
+    } catch (err) {
+      console.error("Export error:", err);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const overallTotalRevenue = bookings
+    .filter((b) => b.paymentStatus === "paid" || b.paymentStatus === "dp_paid")
+    .reduce(
+      (sum, b) =>
+        sum +
+        (b.paymentStatus === "paid"
+          ? Number(b.totalPrice) || 0
+          : Number(b.depositPaid) || 0),
+      0
+    );
+
+  const pendingBookingsCount = bookings.filter((b) => b.bookingStatus === "pending").length;
+  const confirmedBookingsCount = bookings.filter((b) => b.bookingStatus === "confirmed").length;
+
   if (loading) {
     return (
-      <div className="py-20 text-center text-xs font-mono text-zinc-500">
-        Memuat data operasional...
+      <div className="py-24 text-center space-y-3">
+        <div className="w-8 h-8 border-2 border-[#ff6169] border-t-transparent rounded-full animate-spin mx-auto" />
+        <p className="text-xs font-mono text-zinc-400">Memuat data dashboard & analitik studio...</p>
       </div>
     );
   }
+
+  // Pre-calculate SVG Donut Segments
+  const radius = 70;
+  const circumference = 2 * Math.PI * radius; // ~439.82
+  let accumulatedOffset = 0;
 
   return (
     <div className="space-y-8">
@@ -123,7 +503,7 @@ export default function AdminOverviewPage() {
             Halo, <span className="text-white font-semibold">{session?.name}</span>
           </h1>
           <p className="text-xs text-zinc-400 mt-1 font-light">
-            Selamat datang di panel kontrol terpadu Origine Studio Malang.
+            Selamat datang di panel kontrol operasional & keuangan terpadu Origine Studio Malang.
           </p>
         </div>
 
@@ -157,9 +537,9 @@ export default function AdminOverviewPage() {
           </div>
           <p className="text-3xl font-syne font-bold text-white">{bookings.length}</p>
           <div className="flex items-center gap-2 mt-2 text-[11px] font-mono text-zinc-400">
-            <span className="text-emerald-400">{confirmedBookings} Terkonfirmasi</span>
+            <span className="text-emerald-400">{confirmedBookingsCount} Terkonfirmasi</span>
             <span>•</span>
-            <span className="text-amber-400">{pendingBookings} Pending</span>
+            <span className="text-amber-400">{pendingBookingsCount} Pending</span>
           </div>
         </div>
 
@@ -172,7 +552,7 @@ export default function AdminOverviewPage() {
             </div>
           </div>
           <p className="text-2xl sm:text-3xl font-syne font-bold text-emerald-300">
-            {formatRupiah(totalRevenue)}
+            {formatRupiah(overallTotalRevenue)}
           </p>
           <p className="text-[11px] font-mono text-zinc-500 mt-2">
             Dari deposit & pelunasan sesi
@@ -210,7 +590,371 @@ export default function AdminOverviewPage() {
         </div>
       </div>
 
-      {/* 3. WIDGET STATISTIK CMS & KONTEN WEBSITE DINAMIS */}
+      {/* ========================================================================= */}
+      {/* 3. MODUL GRAFIK KEUANGAN, FILTER & EXPORT EXCEL (REQUESTED FEATURE)       */}
+      {/* ========================================================================= */}
+      <div className="space-y-6 p-6 sm:p-7 rounded-3xl bg-[#121212] border border-white/10 shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#720C10]/10 rounded-full blur-3xl pointer-events-none" />
+
+        {/* Section Header & Export Button */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 pb-5 border-b border-white/10 relative z-10">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-[10px] font-mono tracking-widest uppercase text-emerald-400 font-bold flex items-center gap-1.5">
+                <CircleDollarSign className="w-3.5 h-3.5" />
+                FINANCIAL INTELLIGENCE
+              </span>
+              <span className="text-zinc-600">•</span>
+              <span className="text-[10px] font-mono text-zinc-400">
+                Laporan Pendapatan & Kasir
+              </span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-serif text-white font-medium">
+              Analitik Keuangan & Distribusi Pendapatan
+            </h2>
+            <p className="text-xs text-zinc-400 font-light mt-0.5">
+              Pantau tren omzet studio, breakdown penerimaan paket foto, dan ekspor laporan ke Excel.
+            </p>
+          </div>
+
+          {/* Action Toolbar: Export Excel */}
+          <div className="flex items-center gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={handleExportExcel}
+              disabled={isExporting}
+              className={`px-4 py-2.5 rounded-xl font-mono text-xs font-semibold flex items-center gap-2 transition-all shadow-lg ${
+                exportSuccess
+                  ? "bg-emerald-600 text-white shadow-emerald-900/40"
+                  : "bg-emerald-700 hover:bg-emerald-600 text-white shadow-emerald-950/60"
+              }`}
+            >
+              {exportSuccess ? (
+                <>
+                  <Check className="w-4 h-4 text-white" />
+                  <span>Laporan Terekspor!</span>
+                </>
+              ) : (
+                <>
+                  <FileSpreadsheet className="w-4 h-4" />
+                  <span>{isExporting ? "Membuat Excel..." : "Export Excel (.csv)"}</span>
+                  <Download className="w-3.5 h-3.5 opacity-80" />
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Filter Controls Toolbar */}
+        <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-black/40 border border-white/10 relative z-10">
+          {/* Time Filter Tabs */}
+          <div className="flex flex-wrap items-center gap-1.5 text-xs font-mono">
+            <span className="text-zinc-500 text-[11px] uppercase mr-2 flex items-center gap-1">
+              <Filter className="w-3 h-3 text-zinc-400" />
+              Periode:
+            </span>
+            {[
+              { id: "all", label: "Semua" },
+              { id: "today", label: "Hari Ini" },
+              { id: "7days", label: "7 Hari" },
+              { id: "month", label: "Bulan Ini" },
+              { id: "year", label: "Tahun Ini" },
+            ].map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setTimeFilter(t.id as any)}
+                className={`px-3 py-1.5 rounded-lg transition-all ${
+                  timeFilter === t.id
+                    ? "bg-[#720C10] text-white font-bold shadow-md"
+                    : "text-zinc-400 hover:text-white bg-white/[0.03] hover:bg-white/[0.06]"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Payment Status Filter Dropdown / Tabs */}
+          <div className="flex items-center gap-2 text-xs font-mono">
+            <span className="text-zinc-500 text-[11px] uppercase">Status Bayar:</span>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as any)}
+              className="px-3 py-1.5 rounded-lg bg-[#181818] border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-[#720C10]"
+            >
+              <option value="all">Semua Status Bayar</option>
+              <option value="paid">Lunas (Paid)</option>
+              <option value="dp_paid">DP Terbayar</option>
+              <option value="unpaid">Belum Bayar</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Filtered Summary Mini KPI Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 relative z-10">
+          <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-1">
+            <p className="text-[10px] font-mono uppercase text-zinc-400">Total Kas Masuk Terfilter</p>
+            <p className="text-xl sm:text-2xl font-syne font-bold text-emerald-400">
+              {formatRupiah(financialMetrics.realizedCashIn)}
+            </p>
+            <p className="text-[10px] font-mono text-zinc-500">Pelunasan + DP Diterima</p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-1">
+            <p className="text-[10px] font-mono uppercase text-zinc-400">Piutang / Sisa Pelunasan</p>
+            <p className="text-xl sm:text-2xl font-syne font-bold text-amber-400">
+              {formatRupiah(financialMetrics.outstandingReceivable)}
+            </p>
+            <p className="text-[10px] font-mono text-zinc-500">Akan dilunasi saat sesi</p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-1">
+            <p className="text-[10px] font-mono uppercase text-zinc-400">Rata-Rata per Sesi (AOV)</p>
+            <p className="text-xl sm:text-2xl font-syne font-bold text-white">
+              {formatRupiah(financialMetrics.averageOrderValue)}
+            </p>
+            <p className="text-[10px] font-mono text-zinc-500">Nilai rata-rata pesanan</p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-1">
+            <p className="text-[10px] font-mono uppercase text-zinc-400">Transaksi Terfilter</p>
+            <p className="text-xl sm:text-2xl font-syne font-bold text-white">
+              {financialMetrics.count}{" "}
+              <span className="text-xs text-zinc-500 font-mono font-normal">Sesi</span>
+            </p>
+            <p className="text-[10px] font-mono text-emerald-400">
+              {financialMetrics.paidRate}% Transaksi Lunas
+            </p>
+          </div>
+        </div>
+
+        {/* 2 CHARTS GRID: GENERAL CHART (BAR TREND) + DONUT CHART */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-2 relative z-10">
+          {/* ========================================================= */}
+          {/* A. GRAFIK UMUM: Bar Chart Tren Pendapatan per Tanggal Sesi */}
+          {/* ========================================================= */}
+          <div className="lg:col-span-7 p-6 rounded-2xl bg-black/40 border border-white/10 flex flex-col justify-between space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-white/5">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-[#ff6169]" />
+                <h3 className="text-sm font-semibold text-white">
+                  Grafik Umum: Tren Penerimaan Omzet Studio
+                </h3>
+              </div>
+              <span className="text-[10px] font-mono text-zinc-400">
+                Penerimaan Harian / Sesi
+              </span>
+            </div>
+
+            {/* Interactive SVG Bar Chart Container */}
+            <div className="space-y-3">
+              {barChartData.bars.length === 0 ? (
+                <div className="py-20 text-center text-xs font-mono text-zinc-500">
+                  Tidak ada data transaksi pada rentang filter ini.
+                </div>
+              ) : (
+                <div className="relative pt-6">
+                  {/* Background horizontal grid guides */}
+                  <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-20">
+                    <div className="border-b border-zinc-500 text-[9px] font-mono text-zinc-400 text-right pr-2">
+                      {formatRupiah(barChartData.maxRevenue)}
+                    </div>
+                    <div className="border-b border-zinc-500 text-[9px] font-mono text-zinc-400 text-right pr-2">
+                      {formatRupiah(Math.round(barChartData.maxRevenue / 2))}
+                    </div>
+                    <div className="border-b border-zinc-500 text-[9px] font-mono text-zinc-400 text-right pr-2">
+                      Rp 0
+                    </div>
+                  </div>
+
+                  {/* Bars Flex container */}
+                  <div className="h-52 flex items-end gap-2 sm:gap-4 px-2 pt-6 pb-2 relative z-10">
+                    {barChartData.bars.map((bar, idx) => {
+                      const barHeightPercent = Math.max(
+                        8,
+                        Math.round((bar.revenue / barChartData.maxRevenue) * 100)
+                      );
+                      const isHovered = hoveredBarIndex === idx;
+
+                      return (
+                        <div
+                          key={bar.date + idx}
+                          className="flex-1 flex flex-col items-center h-full justify-end group relative cursor-pointer"
+                          onMouseEnter={() => setHoveredBarIndex(idx)}
+                          onMouseLeave={() => setHoveredBarIndex(null)}
+                        >
+                          {/* Tooltip on Hover */}
+                          {isHovered && (
+                            <div className="absolute -top-12 z-30 px-2.5 py-1.5 rounded-lg bg-zinc-900 border border-white/20 shadow-2xl text-center pointer-events-none whitespace-nowrap animate-in fade-in zoom-in-95">
+                              <p className="text-[10px] font-mono text-zinc-400">{bar.date}</p>
+                              <p className="text-xs font-mono font-bold text-emerald-300">
+                                {formatRupiah(bar.revenue)}
+                              </p>
+                              <p className="text-[9px] font-mono text-zinc-500">
+                                {bar.count} Sesi Studio
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Bar visual with gradient */}
+                          <div
+                            style={{ height: `${barHeightPercent}%` }}
+                            className={`w-full max-w-[42px] rounded-t-lg transition-all duration-300 ${
+                              isHovered
+                                ? "bg-gradient-to-t from-[#720C10] via-[#ff6169] to-emerald-400 shadow-lg shadow-[#ff6169]/30"
+                                : "bg-gradient-to-t from-[#720C10]/80 to-[#ff6169]/90 group-hover:from-[#720C10] group-hover:to-[#ff6169]"
+                            }`}
+                          />
+
+                          {/* X-axis Label */}
+                          <span className="text-[9px] font-mono text-zinc-400 mt-2 truncate max-w-full group-hover:text-white">
+                            {bar.label}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Bar chart caption */}
+            <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[11px] font-mono text-zinc-400">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded bg-gradient-to-t from-[#720C10] to-[#ff6169]" />
+                Omzet Diterima (Rp)
+              </span>
+              <span>Arahkan kursor ke batang untuk melihat detail</span>
+            </div>
+          </div>
+
+          {/* ========================================================= */}
+          {/* B. GRAFIK BULAT: Donut / Pie Chart Proporsi Finansial      */}
+          {/* ========================================================= */}
+          <div className="lg:col-span-5 p-6 rounded-2xl bg-black/40 border border-white/10 flex flex-col justify-between space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-white/5">
+              <div className="flex items-center gap-2">
+                <PieChart className="w-4 h-4 text-emerald-400" />
+                <h3 className="text-sm font-semibold text-white">
+                  Grafik Bulat: Distribusi Keuangan
+                </h3>
+              </div>
+
+              {/* Toggle mode: Category vs Status */}
+              <div className="flex items-center p-0.5 rounded-lg bg-white/5 border border-white/10 text-[10px] font-mono">
+                <button
+                  type="button"
+                  onClick={() => setDonutMode("category")}
+                  className={`px-2 py-0.5 rounded-md transition-all ${
+                    donutMode === "category" ? "bg-[#720C10] text-white font-bold" : "text-zinc-400"
+                  }`}
+                >
+                  Layanan
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDonutMode("status")}
+                  className={`px-2 py-0.5 rounded-md transition-all ${
+                    donutMode === "status" ? "bg-[#720C10] text-white font-bold" : "text-zinc-400"
+                  }`}
+                >
+                  Status
+                </button>
+              </div>
+            </div>
+
+            {/* Donut Chart & Legend */}
+            <div className="flex flex-col sm:flex-row items-center justify-around gap-6">
+              {/* SVG Donut */}
+              <div className="relative w-44 h-44 shrink-0 flex items-center justify-center">
+                <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 180 180">
+                  {/* Background Track Circle */}
+                  <circle
+                    cx="90"
+                    cy="90"
+                    r={radius}
+                    className="stroke-zinc-800"
+                    strokeWidth="20"
+                    fill="transparent"
+                  />
+
+                  {/* Dynamic Colored Donut Segments */}
+                  {donutChartData.segments.map((seg, idx) => {
+                    const strokeDash = (seg.value / (donutChartData.totalAmount || 1)) * circumference;
+                    const offset = accumulatedOffset;
+                    accumulatedOffset += strokeDash;
+
+                    return (
+                      <circle
+                        key={seg.label + idx}
+                        cx="90"
+                        cy="90"
+                        r={radius}
+                        stroke={seg.color}
+                        strokeWidth="20"
+                        strokeDasharray={`${strokeDash} ${circumference - strokeDash}`}
+                        strokeDashoffset={-offset}
+                        fill="transparent"
+                        strokeLinecap="butt"
+                        className="transition-all duration-500 hover:opacity-80"
+                      />
+                    );
+                  })}
+                </svg>
+
+                {/* Donut Center Hole Text */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+                  <span className="text-[10px] font-mono uppercase text-zinc-400">Total Kas</span>
+                  <span className="text-sm font-syne font-bold text-white px-2">
+                    {formatRupiah(donutChartData.totalAmount)}
+                  </span>
+                  <span className="text-[9px] font-mono text-emerald-400">
+                    {donutChartData.segments.length} Segmen
+                  </span>
+                </div>
+              </div>
+
+              {/* Legend List */}
+              <div className="space-y-2.5 flex-1 min-w-[160px]">
+                {donutChartData.segments.length === 0 ? (
+                  <p className="text-xs font-mono text-zinc-500 italic">Belum ada data segmen.</p>
+                ) : (
+                  donutChartData.segments.map((seg, idx) => (
+                    <div
+                      key={seg.label + idx}
+                      className="flex items-center justify-between text-xs font-mono"
+                    >
+                      <div className="flex items-center gap-2 truncate pr-2">
+                        <span
+                          className="w-2.5 h-2.5 rounded-full shrink-0"
+                          style={{ backgroundColor: seg.color }}
+                        />
+                        <span className="text-zinc-300 truncate" title={seg.label}>
+                          {seg.label}
+                        </span>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <span className="text-white font-bold">{seg.percent}%</span>
+                        <span className="text-zinc-500 text-[10px] block">
+                          {formatRupiah(seg.value)}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Donut chart caption */}
+            <div className="pt-2 border-t border-white/5 text-[11px] font-mono text-zinc-500 text-center">
+              Mode: {donutMode === "category" ? "Pembagian per Kategori/Ruang" : "Pembagian per Status Bayar"}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 4. WIDGET STATISTIK CMS & KONTEN WEBSITE DINAMIS */}
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
@@ -426,7 +1170,7 @@ export default function AdminOverviewPage() {
         </div>
       </div>
 
-      {/* 4. QUICK ACTION TILES */}
+      {/* 5. QUICK ACTION TILES */}
       <div>
         <h3 className="text-xs font-mono uppercase tracking-widest text-zinc-400 mb-4 font-semibold">
           AKSI CEPAT SESUAI HAK AKSES
@@ -474,7 +1218,7 @@ export default function AdminOverviewPage() {
               </div>
               <h4 className="text-sm font-semibold text-white">Kelola Transaksi & Booking</h4>
               <p className="text-xs text-zinc-400 mt-1 font-light leading-relaxed">
-                Konfirmasi pelunasan, periksa DP klien, dan update status jadwal pemotretan.
+                Input link Google Drive, konfirmasi pelunasan, periksa DP klien, dan jadwal sesi.
               </p>
             </Link>
           ) : (
@@ -498,7 +1242,7 @@ export default function AdminOverviewPage() {
           {/* Quick Action 3: Pricing & Spaces */}
           {isManager ? (
             <Link
-              href="/admin/pricing"
+              href="/admin/packages"
               className="p-5 rounded-2xl bg-white/[0.03] hover:bg-[#720C10]/15 border border-white/10 hover:border-[#720C10] transition-all group block shadow-lg"
             >
               <div className="flex items-center justify-between mb-2">
@@ -507,9 +1251,9 @@ export default function AdminOverviewPage() {
                 </div>
                 <ArrowUpRight className="w-4 h-4 text-zinc-500 group-hover:text-white transition-colors" />
               </div>
-              <h4 className="text-sm font-semibold text-white">Edit Tarif Studio & Add-on</h4>
+              <h4 className="text-sm font-semibold text-white">Kelola Paket & Tarif Studio</h4>
               <p className="text-xs text-zinc-400 mt-1 font-light leading-relaxed">
-                Sesuaikan tarif sewa Studio 01, 02, 03 dan peralatan Broncolor/Phase One.
+                Tambah, hapus, dan sesuaikan paket Self Studio, Pas Photo, Wisuda, dan Add-on.
               </p>
             </Link>
           ) : (
@@ -531,7 +1275,7 @@ export default function AdminOverviewPage() {
         </div>
       </div>
 
-      {/* 5. RECENT BOOKINGS PREVIEW TABLE */}
+      {/* 6. RECENT BOOKINGS PREVIEW TABLE */}
       <div className="p-6 rounded-2xl bg-[#121212] border border-white/10 shadow-2xl">
         <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-4">
           <div>
@@ -539,7 +1283,7 @@ export default function AdminOverviewPage() {
               Reservasi Sesi Terbaru
             </h3>
             <p className="text-xs text-zinc-400 font-light mt-0.5">
-              Pantau jadwal klien dan status pembayaran studio langsung.
+              Pantau jadwal klien, link Google Drive penyerahan foto, dan status pembayaran.
             </p>
           </div>
           {(isManager || isCashier) && (
@@ -563,6 +1307,7 @@ export default function AdminOverviewPage() {
                 <th className="py-2.5 px-3">Tanggal & Sesi</th>
                 <th className="py-2.5 px-3">Total Biaya</th>
                 <th className="py-2.5 px-3">Status Bayar</th>
+                <th className="py-2.5 px-3">Link G-Drive</th>
                 <th className="py-2.5 px-3">Status Sesi</th>
               </tr>
             </thead>
@@ -598,6 +1343,20 @@ export default function AdminOverviewPage() {
                         ? "DP Terbayar"
                         : "Belum Bayar"}
                     </span>
+                  </td>
+                  <td className="py-3 px-3">
+                    {b.googleDriveUrl ? (
+                      <a
+                        href={b.googleDriveUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-950/40 text-emerald-300 border border-emerald-500/30 text-[10px] hover:bg-emerald-900/50"
+                      >
+                        <span>Drive ↗</span>
+                      </a>
+                    ) : (
+                      <span className="text-[10px] text-zinc-500 italic">Belum Ada</span>
+                    )}
                   </td>
                   <td className="py-3 px-3">
                     <span

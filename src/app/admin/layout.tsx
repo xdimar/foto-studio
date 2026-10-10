@@ -25,6 +25,7 @@ import {
   Sliders,
   ChevronLeft,
   ChevronRight,
+  FolderDown,
 } from "lucide-react";
 import { StudioRole, StaffSession } from "@/lib/types";
 
@@ -172,11 +173,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       badge: "Kontak",
     },
     {
-      name: "Reservasi Saya",
+      name: "Portal & Unduh Foto",
       href: "/admin/my-bookings",
-      icon: Calendar,
+      icon: FolderDown,
       allowed: ["user", "owner", "admin"],
-      badge: "Klien",
+      badge: "G-Drive",
     },
     {
       name: "Kalender & Jadwal Sesi",

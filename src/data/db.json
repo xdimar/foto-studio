@@ -435,7 +435,9 @@
       "bookingStatus": "completed",
       "notes": "Foto produk kemasan kopi biji single origin lereng Bromo.",
       "createdAt": "2026-10-02T11:00:00Z",
-      "handledBy": "Siti Rahma (Kasir)"
+      "handledBy": "Siti Rahma (Kasir)",
+      "googleDriveUrl": "https://drive.google.com/drive/folders/1aBcDeFgHiJkLmNoPqRsTuVwXyZ_Origine2026",
+      "deliveredAt": "2026-10-08T16:00:00Z"
     }
   ],
   "gallery": [
