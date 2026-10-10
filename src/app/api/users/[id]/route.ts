@@ -107,11 +107,20 @@ export async function DELETE(
     return NextResponse.json({ success: false, error: 'User tidak ditemukan.' }, { status: 404 });
   }
 
-  if (targetUser.role === 'owner' && session.role !== 'owner') {
-    return NextResponse.json(
-      { success: false, error: 'Akun Owner hanya dapat dihapus oleh Owner lain.' },
-      { status: 403 }
-    );
+  if (targetUser.role === 'owner') {
+    if (session.role !== 'owner') {
+      return NextResponse.json(
+        { success: false, error: 'Akun Owner hanya dapat dihapus oleh Owner lain.' },
+        { status: 403 }
+      );
+    }
+    const activeOwnerCount = db.users.filter((u) => u.role === 'owner' && u.status === 'active').length;
+    if (activeOwnerCount <= 1) {
+      return NextResponse.json(
+        { success: false, error: 'Tidak dapat menghapus Owner terakhir. Studio harus memiliki minimal satu akun Owner aktif.' },
+        { status: 400 }
+      );
+    }
   }
 
   db.users = db.users.filter((u) => u.id !== id);

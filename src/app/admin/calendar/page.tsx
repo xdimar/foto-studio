@@ -44,7 +44,11 @@ export default function StudioCalendarPage() {
 
   const upcomingBookings = bookings
     .filter((b) => b.bookingStatus === "confirmed" || b.bookingStatus === "pending")
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    .sort((a, b) => {
+      const timeA = a.date ? new Date(a.date).getTime() : 0;
+      const timeB = b.date ? new Date(b.date).getTime() : 0;
+      return (isNaN(timeA) ? 0 : timeA) - (isNaN(timeB) ? 0 : timeB);
+    });
 
   return (
     <div className="space-y-8">

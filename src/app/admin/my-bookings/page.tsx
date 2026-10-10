@@ -256,7 +256,7 @@ export default function MyBookingsClientPortalPage() {
               Reset Filter
             </button>
             <Link
-              href="/#booking"
+              href="/booking"
               className="px-5 py-2 rounded-xl bg-[#720C10] hover:bg-[#8d1116] text-white text-xs font-semibold uppercase tracking-wider transition-all"
             >
               Booking Sesi Baru

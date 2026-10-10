@@ -121,10 +121,39 @@ export async function POST(request: Request) {
       calculatedTotal = basePrice + addonsTotal;
     }
 
+    // 1. Conflict Prevention: prevent double booking on the same room, date and confirmed timeSlot
+    const activeConflict = db.bookings.find(
+      (b) =>
+        b.roomId === room.id &&
+        b.date === date &&
+        b.timeSlot === timeSlot &&
+        b.bookingStatus === "confirmed"
+    );
+    if (activeConflict) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Slot jam "${timeSlot}" pada tanggal ${date} untuk ruangan ini telah terisi. Silakan pilih waktu yang lain.`,
+        },
+        { status: 409 }
+      );
+    }
+
     const session = await getCurrentSession();
 
+    // 2. Safe Unique Booking ID (Collision-proof even if bookings are deleted)
+    const currentYear = new Date().getFullYear();
+    const existingNumbers = db.bookings
+      .map((b) => {
+        const match = b.id.match(/^ORG-\d{4}-(\d+)$/);
+        return match ? parseInt(match[1], 10) : 0;
+      })
+      .filter((n) => !isNaN(n));
+    const nextCounter = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : db.bookings.length + 1;
+    const bookingId = `ORG-${currentYear}-${String(nextCounter).padStart(3, "0")}`;
+
     const newBooking: StudioBooking = {
-      id: `ORG-${new Date().getFullYear()}-${String(db.bookings.length + 1).padStart(3, "0")}`,
+      id: bookingId,
       clientName: clientName.trim(),
       clientEmail: clientEmail?.trim() || "",
       clientPhone: clientPhone.trim(),

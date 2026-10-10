@@ -1363,8 +1363,15 @@ export default function StudioBookingExperience() {
 
   // Available time slots based on package type
   const availableTimeSlots = useMemo(() => {
-    if (activePackage.id === "room-self") {
-      // 15-minute / 30-minute self photo slots
+    const isSelfPhoto =
+      activePackage.id === "room-self" ||
+      activePackage.id === "pkg-self-studio" ||
+      activePackage.category === "self-studio" ||
+      activePackage.id === "pkg-pas-photo" ||
+      activePackage.category === "pas-photo";
+
+    if (isSelfPhoto) {
+      // 15-minute / 30-minute self photo & pas photo express slots
       return [
         "09:00 - 09:15",
         "09:15 - 09:30",
